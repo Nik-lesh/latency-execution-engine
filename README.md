@@ -1,111 +1,277 @@
+# Latency-Aware Execution Engine for Portfolio Rebalancing
 
-# DINOv2 CIFAR-10 Classification
+A production-quality trade execution system that minimizes slippage on large cryptocurrency orders using reinforcement learning. Trained on 7.5M bars of real Binance market data across 3 assets, evaluated walk-forward on fully out-of-sample 2024 data, and validated against 98M real tick-level trades.
 
-## 📊 Final Results
-
-**Test Accuracy: 99.40%**
-- Top-5 Accuracy: 99.98%
-- F1 Score: 0.9940
-- Precision: 0.9940
-- Recall: 0.9940
-
-##  Architecture
-
-- **Base Model**: dinov2_vitb14
-- **Parameters**: 88,030,218 total
-- **Classification Head**: 4-layer MLP (1024→512→256→10)
-- **Regularization**: Dropout (0.5), Label Smoothing (0.1)
-
-##  Advanced Techniques Used
-
-1. **2-Phase Fine-Tuning**
-   - Phase 1: Frozen backbone (10 epochs)
-   - Phase 2: Full fine-tuning (40 epochs)
-
-2. **Data Augmentation**
-   - MixUp (α=0.2)
-   - CutMix (α=1.0)
-   - Random Erasing (p=0.25)
-   - Color Jittering
-
-3. **Optimization**
-   - Differential Learning Rates (backbone: 1e-5, head: 1e-3)
-   - OneCycleLR Scheduler
-   - Mixed Precision Training (FP16)
-   - Gradient Clipping (norm=1.0)
-
-4. **Regularization**
-   - Exponential Moving Average (EMA)
-   - Strong Dropout (0.5)
-   - Weight Decay (0.05)
-
-5. **Inference**
-   - Test-Time Augmentation (TTA)
-   - Model Ensemble (2 models)
-
-##  Training Details
-
-- **Dataset**: CIFAR-10 (45,000 train, 5,000 val, 5,000 test)
-- **Total Epochs**: 37
-- **Best Epoch**: 0
-- **Device**: cuda
-- **Batch Size**: 64
-
-## Per-Class Performance
-
-```
-              precision    recall  f1-score   support
-
-    airplane     1.0000    0.9960    0.9980       500
-  automobile     0.9920    0.9980    0.9950       500
-        bird     0.9960    0.9960    0.9960       500
-         cat     0.9839    0.9800    0.9820       500
-        deer     0.9960    0.9920    0.9940       500
-         dog     0.9821    0.9880    0.9850       500
-        frog     0.9960    1.0000    0.9980       500
-       horse     0.9980    0.9980    0.9980       500
-        ship     0.9980    1.0000    0.9990       500
-       truck     0.9980    0.9920    0.9950       500
-
-    accuracy                         0.9940      5000
-   macro avg     0.9940    0.9940    0.9940      5000
-weighted avg     0.9940    0.9940    0.9940      5000
-
-```
-
-##  Files Generated
-
-- `final_model_production.pth` - Best model weights
-- `ensemble_models.pth` - Ensemble weights
-- `experiment_results.json` - Complete metrics
-- `training_history.csv` - Training curves data
-- `faang_training_analysis.png` - Visualizations
-- `attention_sample_*.png` - Attention maps
-
-##  Usage
-
-```python
-# Load model
-checkpoint = torch.load('final_model_production.pth')
-model = FineTunedDINOv2('dinov2_vitb14', num_classes=10)
-model.load_state_dict(checkpoint['model_state_dict'])
-
-# Or use EMA model
-model.load_state_dict(checkpoint['ema_state_dict'])
-
-# Inference
-model.eval()
-with torch.no_grad():
-    output = model(image_tensor)
-    prediction = output.argmax(1)
-```
-
-##  References
-
-- DINOv2: https://arxiv.org/abs/2304.07193
-- MixUp: https://arxiv.org/abs/1710.09412
-- CutMix: https://arxiv.org/abs/1905.04899
+**CS5130 — Advanced AI/ML Engineering | Spring 2026 | Northeastern University**
 
 ---
-**Author**: Research Implementation for FAANG Interview
-**Date**: 2025-11-30
+
+## Results
+
+### Strategy Comparison (1 BTC, 500 simulations)
+
+| Strategy            | Cost ($)   | vs TWAP    |
+| ------------------- | ---------- | ---------- |
+| Immediate           | $370.29    | -1,734%    |
+| TWAP                | $20.20     | baseline   |
+| VWAP                | $15.09     | +25.3%     |
+| A-C (λ=0.5)         | $20.20     | +0.0%      |
+| **ML Agent (ours)** | **$11.29** | **+44.1%** |
+
+### Multi-Asset Out-of-Sample (50 BTC, 2024 H2)
+
+| Asset       | vs TWAP       | Win Rate | vs VWAP   |
+| ----------- | ------------- | -------- | --------- |
+| BTCUSDT     | **+10.2 bps** | 75%      | -0.6 bps  |
+| ETHUSDT     | **+0.6 bps**  | 65%      | -0.8 bps  |
+| SOLUSDT     | -0.2 bps      | 12%      | -0.03 bps |
+| **Average** | **+3.5 bps**  |          | -0.5 bps  |
+
+At 50 BTC (~$2.5M), saving 10.2 bps on BTCUSDT = **~$940 per order**. Over 1,000 orders = **$940,000 saved**.
+
+---
+
+## Problem
+
+When a hedge fund needs to buy 50 BTC, executing it all at once moves the price against them — this is called **slippage** or **market impact**. The cost increases nonlinearly with order size: each additional BTC costs more than the last because you're consuming progressively deeper levels of the order book.
+
+The question: **How do you slice a large order over 60 minutes to minimize total execution cost?**
+
+This project builds a complete system to answer that question using real market data and reinforcement learning.
+
+---
+
+## Quick Start
+
+### Setup
+
+```bash
+git clone https://github.com/YOUR_USERNAME/latency-execution-engine.git
+cd latency-execution-engine
+python -m venv venv && source venv/bin/activate
+pip install pandas numpy pyarrow pyyaml torch tqdm requests matplotlib seaborn
+```
+
+### Download Data
+
+```bash
+python scripts/download_data.py --symbols BTCUSDT ETHUSDT SOLUSDT --start 2020-01-01 --end 2024-12-31
+python scripts/validate_data.py --data data/raw/klines/BTCUSDT/ --output data/processed/BTCUSDT_klines_1m.parquet
+```
+
+### Run Full Pipeline (single command)
+
+```bash
+python scripts/run_pipeline.py --data data/processed/BTCUSDT_klines_1m.parquet
+python scripts/run_pipeline.py --data data/processed/BTCUSDT_klines_1m.parquet --full  # includes failure/ethics analysis
+```
+
+### Train RL Agent
+
+```bash
+# Single asset, 50 BTC orders (~3 hours on CPU)
+python scripts/train_large.py --data data/processed/BTCUSDT_klines_1m.parquet --qty 50 --episodes 50000
+
+# Multi-asset training on BTC + ETH + SOL (~5 hours)
+python scripts/train_multi.py --train --episodes 50000 --qty 50
+
+# Order size sweep (10, 25, 50 BTC)
+python scripts/train_large.py --data data/processed/BTCUSDT_klines_1m.parquet --sweep
+```
+
+### Evaluate on Tick Data
+
+```bash
+python scripts/eval_ticks.py --tick-dir data/raw/trades/BTCUSDT --model models/multi/best.pt --qty 50
+```
+
+### Generate Figures
+
+```bash
+python scripts/generate_figures.py --data data/processed/BTCUSDT_klines_1m.parquet --model models/multi/best.pt
+```
+
+### Run Tests
+
+```bash
+python tests/test_simulator/test_engine_and_impact.py    # 22 tests
+python tests/test_policies/test_all_policies.py           # 48 tests
+```
+
+---
+
+## System Architecture
+
+```
+Raw Market Data (Binance OHLCV + Tick Trades)
+        │
+        ▼
+┌──────────────────┐
+│  Data Ingestion   │  download_data.py, validate_data.py
+│  & Validation     │  → Schema validation, 7 quality checks
+│                   │  → 2.6M bars per asset, 126 GB tick data
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│  Feature          │  src/features/engine.py
+│  Engineering      │  → 14 features: volatility, volume, spread,
+│                   │    momentum, time-of-day encoding
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│  Execution        │  src/simulator/impact.py + engine.py
+│  Simulator        │  → Almgren-Chriss impact model
+│                   │  → Variable spread from real data
+│                   │  → Cost = spread + η × price × part^1.5
+└────────┬─────────┘
+         │
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+┌────────┐ ┌─────────────┐
+│Baselines│ │ RL Agent     │
+│ TWAP   │ │ Double DQN   │  14-dim state, 7 VWAP-relative actions
+│ VWAP   │ │ + Dueling    │  Terminal reward: savings vs VWAP in bps
+│ A-C    │ │ + PER        │  50K episodes, 3 assets
+│ Immed. │ │ + LayerNorm  │
+└───┬────┘ └──────┬──────┘
+    │              │
+    ▼              ▼
+┌──────────────────┐
+│  Evaluation       │  Monte Carlo (500+ sims per strategy)
+│                   │  Walk-forward: Train 2020-23 → Test 2024 H2
+│  → Regime analysis│  Cross-asset generalization (BTC, ETH, SOL)
+│  → Tick-level     │  98M real trade validation
+│  → Failure cases  │  Edge cases, limitations, ethics
+└──────────────────┘
+```
+
+---
+
+## Repository Structure
+
+```
+latency-execution-engine/
+├── src/                            # Source code (Python package)
+│   ├── __init__.py                 # v1.0.0
+│   ├── data/
+│   │   ├── schemas.py              # KlineSchema, TradeSchema
+│   │   ├── loader.py               # Binance CSV/Parquet loader
+│   │   └── validator.py            # 7 data quality checks
+│   ├── features/
+│   │   └── engine.py               # 14 execution-relevant features
+│   ├── simulator/
+│   │   ├── impact.py               # Almgren-Chriss market impact model
+│   │   └── engine.py               # Policy-agnostic execution simulator
+│   ├── policies/
+│   │   ├── baselines.py            # Immediate, TWAP, VWAP, A-C
+│   │   ├── rl_env.py               # Gym-style RL environment
+│   │   └── dqn_agent.py            # Double DQN + PER + dueling
+│   ├── evaluation/
+│   │   ├── backtest.py             # Monte Carlo backtester
+│   │   └── visualizations.py       # Plot utilities
+│   └── utils/
+│       └── config.py               # YAML config loader
+├── scripts/                        # CLI tools
+│   ├── download_data.py            # Data download with retry
+│   ├── validate_data.py            # Quality checks + Parquet export
+│   ├── run_backtest.py             # Baseline strategy comparison
+│   ├── run_pipeline.py             # Single-command end-to-end pipeline
+│   ├── train_large.py              # DQN training (large orders, sweep)
+│   ├── train_multi.py              # Multi-asset training (BTC+ETH+SOL)
+│   ├── eval_ticks.py               # Tick-level evaluation (98M trades)
+│   ├── analysis.py                 # Failure/edge/ethics analysis
+│   ├── generate_figures.py         # Publication-quality plots
+│   └── parse_log.py                # Training log → CSV
+├── tests/                          # 70 tests
+│   ├── test_simulator/
+│   │   └── test_engine_and_impact.py
+│   └── test_policies/
+│       └── test_all_policies.py
+├── configs/default.yaml            # Centralized hyperparameters
+├── notebooks/                      # Colab training notebooks
+├── models/                         # Saved checkpoints (best.pt, final.pt)
+├── reports/figures/                 # Generated plots (4 figures)
+├── data/                           # Market data (gitignored)
+└── .gitignore
+```
+
+---
+
+## Technical Details
+
+### Data
+
+| Asset           | Bars           | Date Range        | Price Range       | Median Volume  |
+| --------------- | -------------- | ----------------- | ----------------- | -------------- |
+| BTCUSDT         | 2,628,555      | 2020-01 → 2024-12 | $3,810 → $108,258 | 34.6 BTC/min   |
+| ETHUSDT         | 2,628,554      | 2020-01 → 2024-12 | $86 → $4,865      | 254.6 ETH/min  |
+| SOLUSDT         | 2,307,975      | 2020-04 → 2024-12 | $1 → $264         | 1,407 SOL/min  |
+| **Tick trades** | **98,667,010** | 2023-03           | Individual trades | Trade-by-trade |
+
+### Impact Model
+
+```
+cost = quantity × (spread/2 + η × price × participation^1.5)
+```
+
+- Spread: variable from real data (median 2 bps, range 0.5–10 bps)
+- η = 0.3 (temporary impact coefficient)
+- Participation cap: 15% of bar volume
+
+### RL Agent
+
+| Component | Choice                                                                    |
+| --------- | ------------------------------------------------------------------------- |
+| Algorithm | Double DQN with dueling architecture                                      |
+| Replay    | Prioritized experience replay (PER, α=0.6)                                |
+| Network   | 256-256-128 with LayerNorm                                                |
+| Optimizer | AdamW (lr=3e-4, cosine annealing)                                         |
+| Actions   | 7 VWAP-relative: [0, 0.3, 0.6, 1.0, 1.5, 2.0, 3.0]                        |
+| State     | 14 features (inventory, time, vol, volume, spread, momentum, time-of-day) |
+| Reward    | Terminal: savings vs VWAP in bps                                          |
+| Training  | 50K episodes across BTC+ETH+SOL (2020-2023)                               |
+
+### Evaluation Protocol
+
+| Split    | Data                  | Purpose                             |
+| -------- | --------------------- | ----------------------------------- |
+| Train    | BTC+ETH+SOL 2020-2023 | 6M bars, agent learns               |
+| Validate | 2024 Jan-Jun          | Early stopping, model selection     |
+| Test     | 2024 Jul-Dec          | Final reported results (never seen) |
+
+---
+
+## Failure Cases & Limitations
+
+**Failure cases** (from `scripts/analysis.py`):
+
+- Flash crashes: +318 bps IS during COVID (2020-03-20)
+- Low volume: 500 BTC orders achieve only 49% fill rate
+- Short horizons: 1-bar execution costs 20× more than 60-bar
+
+**Limitations**: No real order book data, simulated (not real) fills, single-asset execution, no multi-venue routing, discrete actions, 1-minute resolution.
+
+**Ethical risks**: Market manipulation (mitigated by participation caps), fairness concerns, over-reliance on automation (mitigated by kill switches), data privacy (public data only).
+
+Full analysis: `python scripts/analysis.py --data data/processed/BTCUSDT_klines_1m.parquet`
+
+---
+
+## References
+
+1. Almgren & Chriss (2000). Optimal execution of portfolio transactions.
+2. Bertsimas & Lo (1998). Optimal control of execution costs.
+3. Nevmyvaka et al. (2006). Reinforcement learning for optimized trade execution. ICML.
+4. Ning et al. (2021). Double deep Q-learning for optimal execution.
+5. van Hasselt et al. (2016). Deep RL with double Q-learning. AAAI.
+6. Wang et al. (2016). Dueling network architectures. ICML.
+7. Schaul et al. (2016). Prioritized experience replay. ICLR.
+
+---
+
+## Author
+
+**Nikhilesh Waghmare** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
