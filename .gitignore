@@ -47,6 +47,7 @@ wandb/
 large_sweep.txt
 multi_real.txt
 multi_train.txt
+qrdqn_train.txt
 
 # ---------- Secrets ----------
 .env
