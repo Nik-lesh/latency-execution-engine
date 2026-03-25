@@ -2,7 +2,7 @@
 
 A production-quality trade execution system that minimizes slippage on large cryptocurrency orders using reinforcement learning. Trained on 7.5M bars of real Binance market data across 3 assets, evaluated walk-forward on fully out-of-sample 2024 data, and validated against 98M real tick-level trades.
 
-**CS5130 — Advanced AI/ML Engineering | Spring 2026 | Northeastern University**
+**CS5130 - Programming and Data Processing for AI | Spring 2026 | Northeastern University**
 
 ---
 
@@ -274,4 +274,6 @@ Full analysis: `python scripts/analysis.py --data data/processed/BTCUSDT_klines_
 
 ## Author
 
-**Nikhilesh Waghmare** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
+- **Nikhilesh Waghmare** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
+- **Aniket Ghosh** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
+- **Frank Duah** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
