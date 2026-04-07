@@ -94,8 +94,19 @@ python scripts/generate_figures.py --data data/processed/BTCUSDT_klines_1m.parqu
 ### Run Tests
 
 ```bash
-python tests/test_simulator/test_engine_and_impact.py    # 22 tests
-python tests/test_policies/test_all_policies.py           # 48 tests
+# Run the full test suite (176 tests)
+python -m pytest tests/ -v
+
+# Run with coverage report
+python -m pytest tests/ --cov=src --cov-report=term-missing
+
+# Run a specific module
+python -m pytest tests/test_features/ -v
+python -m pytest tests/test_simulator/ -v
+python -m pytest tests/test_policies/ -v
+python -m pytest tests/test_data/ -v
+python -m pytest tests/test_evaluation/ -v
+python -m pytest tests/test_utils/ -v
 ```
 
 ---
@@ -173,7 +184,8 @@ latency-execution-engine/
 │   │   ├── backtest.py             # Monte Carlo backtester
 │   │   └── visualizations.py       # Plot utilities
 │   └── utils/
-│       └── config.py               # YAML config loader
+│       ├── config.py               # YAML config loader
+│       └── errors.py               # PipelineError, safe_execute, validate helpers
 ├── scripts/                        # CLI tools
 │   ├── download_data.py            # Data download with retry
 │   ├── validate_data.py            # Quality checks + Parquet export
@@ -185,16 +197,27 @@ latency-execution-engine/
 │   ├── analysis.py                 # Failure/edge/ethics analysis
 │   ├── generate_figures.py         # Publication-quality plots
 │   └── parse_log.py                # Training log → CSV
-├── tests/                          # 70 tests
+├── tests/                          # 176 tests
+│   ├── test_data/
+│   │   └── test_loader_and_validator.py  # schemas, CSV loader, validator
+│   ├── test_features/
+│   │   └── test_engine.py               # all feature functions, edge cases
 │   ├── test_simulator/
-│   │   └── test_engine_and_impact.py
-│   └── test_policies/
-│       └── test_all_policies.py
+│   │   └── test_engine_and_impact.py    # impact model, A-C trajectory, simulator
+│   ├── test_policies/
+│   │   └── test_all_policies.py         # baselines, adaptive, RL env, DQN agent
+│   ├── test_evaluation/
+│   │   └── test_backtest.py             # Monte Carlo backtester, regime analysis
+│   └── test_utils/
+│       └── test_errors_and_config.py    # PipelineError, safe_execute, config loader
 ├── configs/default.yaml            # Centralized hyperparameters
 ├── notebooks/                      # Colab training notebooks
 ├── models/                         # Saved checkpoints (best.pt, final.pt)
 ├── reports/figures/                 # Generated plots (4 figures)
 ├── data/                           # Market data (gitignored)
+├── .github/
+│   └── workflows/
+│       └── tests.yml               # CI: runs test suite on push/PR to main
 └── .gitignore
 ```
 
