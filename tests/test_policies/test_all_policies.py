@@ -347,6 +347,178 @@ def test_policy_comparison():
     return r
 
 
+# ─────────────────────────────────────────────────────────────
+# AdaptivePolicy and ConservativeAdaptivePolicy tests
+# ─────────────────────────────────────────────────────────────
+
+class TestAdaptivePolicy:
+    """Tests for AdaptivePolicy (feature-based heuristic)."""
+
+    def _make_state(self, **overrides):
+        base = {
+            "remaining_bars": 30,
+            "remaining_quantity": 0.5,
+            "total_quantity": 1.0,
+            "time_horizon": 60,
+            "bar_index": 30,
+            "volume_imbalance": 1.0,
+            "rolling_volatility": 0.70,
+            "spread_proxy": 0.001,
+        }
+        base.update(overrides)
+        return base
+
+    def test_action_in_valid_range(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        action = policy.get_action(self._make_state())
+        assert 0.0 <= action <= 1.0
+
+    def test_action_respects_min_rate(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy(min_rate=0.05)
+        # Deliberately narrow spread and low volume to suppress rate
+        action = policy.get_action(self._make_state(volume_imbalance=0.01, spread_proxy=1.0))
+        assert action >= 0.05
+
+    def test_action_respects_max_rate(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy(max_rate=0.3)
+        # High volume + high volatility to push rate up
+        action = policy.get_action(self._make_state(volume_imbalance=10.0, rolling_volatility=5.0))
+        assert action <= 0.3
+
+    def test_high_volume_trades_more_than_low_volume(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        high_vol = policy.get_action(self._make_state(volume_imbalance=3.0))
+        low_vol = policy.get_action(self._make_state(volume_imbalance=0.3))
+        assert high_vol > low_vol
+
+    def test_high_spread_trades_less_than_low_spread(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        tight_spread = policy.get_action(self._make_state(spread_proxy=0.0001))
+        wide_spread = policy.get_action(self._make_state(spread_proxy=0.01))
+        assert tight_spread > wide_spread
+
+    def test_urgency_kicks_in_near_deadline(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy(urgency_threshold=0.3)
+        # 5 bars left out of 60 = ~8% time remaining → well within urgency zone
+        normal = policy.get_action(self._make_state(remaining_bars=30, time_horizon=60))
+        urgent = policy.get_action(self._make_state(remaining_bars=3, time_horizon=60))
+        assert urgent >= normal
+
+    def test_zero_remaining_quantity_returns_zero(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        action = policy.get_action(self._make_state(remaining_quantity=0.0))
+        assert action == 0.0
+
+    def test_zero_remaining_bars_returns_zero(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        action = policy.get_action(self._make_state(remaining_bars=0))
+        assert action == 0.0
+
+    def test_nan_volume_imbalance_handled(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        action = policy.get_action(self._make_state(volume_imbalance=float("nan")))
+        assert 0.0 <= action <= 1.0
+
+    def test_nan_rolling_vol_handled(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        action = policy.get_action(self._make_state(rolling_volatility=float("nan")))
+        assert 0.0 <= action <= 1.0
+
+    def test_reset_is_idempotent(self):
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy()
+        policy.reset()  # Stateless — should not raise
+        action = policy.get_action(self._make_state())
+        assert 0.0 <= action <= 1.0
+
+    def test_hard_deadline_minimum_rate(self):
+        """With 10% time left and 50%+ inventory, must trade at least 0.3."""
+        from src.policies.adaptive import AdaptivePolicy
+        policy = AdaptivePolicy(urgency_threshold=0.3, min_rate=0.02)
+        # 6 bars left of 60 = 10% remaining, 60% inventory left
+        action = policy.get_action(self._make_state(
+            remaining_bars=6, time_horizon=60, remaining_quantity=0.6, total_quantity=1.0
+        ))
+        assert action >= 0.3
+
+
+class TestConservativeAdaptivePolicy:
+    """Tests for ConservativeAdaptivePolicy."""
+
+    def _make_state(self, **overrides):
+        base = {
+            "remaining_bars": 30,
+            "remaining_quantity": 0.5,
+            "total_quantity": 1.0,
+            "time_horizon": 60,
+            "bar_index": 30,
+            "volume_imbalance": 1.0,
+        }
+        base.update(overrides)
+        return base
+
+    def test_action_in_valid_range(self):
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        policy = ConservativeAdaptivePolicy()
+        action = policy.get_action(self._make_state())
+        assert 0.0 <= action <= 1.0
+
+    def test_normal_volume_slower_than_twap(self):
+        """With normal volume, should trade below TWAP rate (60% base)."""
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        from src.policies.baselines import TWAPPolicy
+        policy = ConservativeAdaptivePolicy()
+        twap = TWAPPolicy()
+        state = self._make_state(volume_imbalance=1.0)
+        conservative_action = policy.get_action(state)
+        twap_action = twap.get_action(state)
+        assert conservative_action <= twap_action + 1e-6  # Allow floating-point tolerance
+
+    def test_high_volume_increases_rate(self):
+        """Volume > 1.3x average should boost participation."""
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        policy = ConservativeAdaptivePolicy()
+        normal = policy.get_action(self._make_state(volume_imbalance=1.0))
+        high = policy.get_action(self._make_state(volume_imbalance=2.0))
+        assert high > normal
+
+    def test_urgency_with_large_inventory_late(self):
+        """Near deadline with significant inventory should ramp up."""
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        policy = ConservativeAdaptivePolicy()
+        early = policy.get_action(self._make_state(remaining_bars=30))
+        # 15 bars left (25% time) with 40% inventory
+        late = policy.get_action(self._make_state(
+            remaining_bars=15, remaining_quantity=0.4, total_quantity=1.0
+        ))
+        assert late >= early
+
+    def test_zero_remaining_quantity_returns_zero(self):
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        policy = ConservativeAdaptivePolicy()
+        assert policy.get_action(self._make_state(remaining_quantity=0.0)) == 0.0
+
+    def test_zero_remaining_bars_returns_zero(self):
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        policy = ConservativeAdaptivePolicy()
+        assert policy.get_action(self._make_state(remaining_bars=0)) == 0.0
+
+    def test_reset_does_not_raise(self):
+        from src.policies.adaptive import ConservativeAdaptivePolicy
+        policy = ConservativeAdaptivePolicy()
+        policy.reset()
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("  EXECUTION POLICIES — TEST SUITE")
