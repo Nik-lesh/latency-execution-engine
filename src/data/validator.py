@@ -104,6 +104,17 @@ def validate_klines(
             is_valid=False, issues=issues,
         )
 
+    # --- Early exit for empty DataFrame ---
+    if len(df) == 0:
+        return ValidationReport(
+            total_rows=0,
+            date_range=("unknown", "unknown"),
+            missing_bars=0, missing_pct=0.0, zero_volume_bars=0,
+            duplicate_timestamps=0, price_outliers=0,
+            negative_prices=0, ohlc_violations=0,
+            is_valid=False, issues=["Empty DataFrame"],
+        )
+
     # --- Date range ---
     date_range = (
         str(df[ts].min()),
@@ -165,7 +176,7 @@ def validate_klines(
         issues.append(f"{price_outliers} price outliers (z > {outlier_zscore})")
 
     # --- Determine overall validity ---
-    is_valid = (
+    is_valid = bool(
         len(missing_cols) == 0
         and missing_pct <= max_missing_pct
         and negative_prices == 0
