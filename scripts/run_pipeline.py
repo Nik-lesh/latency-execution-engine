@@ -57,11 +57,11 @@ Examples:
     print(f'  LATENCY-AWARE EXECUTION ENGINE — FULL PIPELINE')
     print(f'{"="*70}')
 
-    # ── Step 1: Load Data ──
-    print(f'\n  📂 STEP 1: Loading data...')
+    #  Step 1: Load Data 
+    print(f'\n   STEP 1: Loading data...')
     path = Path(args.data)
     if not path.exists():
-        print(f'  ❌ File not found: {path}')
+        print(f'   File not found: {path}')
         sys.exit(1)
 
     if path.suffix == '.parquet':
@@ -82,22 +82,22 @@ Examples:
     print(f'  Date range: {df["timestamp"].min()} → {df["timestamp"].max()}')
     print(f'  Price: ${df["close"].min():,.2f} → ${df["close"].max():,.2f}')
 
-    # ── Step 2: Validate Data ──
-    print(f'\n  🔍 STEP 2: Validating data...')
+    #  Step 2: Validate Data 
+    print(f'\n   STEP 2: Validating data...')
     from src.data.validator import validate_klines
     report = validate_klines(df)
     print(report)
     if not report.is_valid:
-        print('  ⚠️  Validation issues found (continuing anyway)')
+        print('    Validation issues found (continuing anyway)')
 
-    # ── Step 3: Compute Features ──
-    print(f'  ⚙️  STEP 3: Computing features...')
+    #  Step 3: Compute Features 
+    print(f'    STEP 3: Computing features...')
     from src.features.engine import compute_all_features
     df = compute_all_features(df)
     print(f'  Features computed: {len(df.columns)} columns')
 
-    # ── Step 4: Run Baseline Strategies ──
-    print(f'\n  📊 STEP 4: Running baseline strategies ({args.n_sims} simulations)...')
+    #  Step 4: Run Baseline Strategies 
+    print(f'\n   STEP 4: Running baseline strategies ({args.n_sims} simulations)...')
     from src.simulator.engine import Order, simulate_execution
     from src.simulator.impact import ImpactParams
     from src.policies.baselines import ImmediatePolicy, TWAPPolicy, VWAPPolicy, AlmgrenChrissPolicy
@@ -137,36 +137,36 @@ Examples:
             'fill': np.mean(fills), 'n': len(is_vals),
         }
 
-    # ── Step 5: Display Results ──
+    #  Step 5: Display Results 
     print(f'\n{"="*80}')
     print(f'  RESULTS — {args.qty} BTC over {args.horizon} min | {args.n_sims} simulations')
     print(f'{"="*80}')
-    print(f'  {"Strategy":<16s} │ {"IS Mean":>9s} {"IS Std":>9s} │ {"Cost":>10s} │ {"Fill":>6s} │ {"vs TWAP":>10s}')
-    print(f'  {"─"*16}─┼{"─"*20}─┼{"─"*11}─┼{"─"*7}─┼{"─"*11}')
+    print(f'  {"Strategy":<16s}  {"IS Mean":>9s} {"IS Std":>9s}  {"Cost":>10s}  {"Fill":>6s}  {"vs TWAP":>10s}')
+    print(f'  {""*16}{""*20}{""*11}{""*7}{""*11}')
 
     twap_cost = results.get('TWAP', {}).get('cost_mean', 1)
     for name, r in results.items():
         vs_twap = (1 - r['cost_mean'] / twap_cost) * 100 if twap_cost > 0 else 0
-        print(f'  {name:<16s} │ {r["is_mean"]:>+9.2f} {r["is_std"]:>9.2f} │ '
-              f'${r["cost_mean"]:>9.2f} │ {r["fill"]:>5.1%} │ {vs_twap:>+9.1f}%')
+        print(f'  {name:<16s}  {r["is_mean"]:>+9.2f} {r["is_std"]:>9.2f}  '
+              f'${r["cost_mean"]:>9.2f}  {r["fill"]:>5.1%}  {vs_twap:>+9.1f}%')
 
     best = min(results.items(), key=lambda x: x[1]['cost_mean'])
     worst = max(results.items(), key=lambda x: x[1]['cost_mean'])
 
-    print(f'  {"─"*80}')
+    print(f'  {""*80}')
     print(f'  Best:  {best[0]} (${best[1]["cost_mean"]:.2f}/order)')
     print(f'  Worst: {worst[0]} (${worst[1]["cost_mean"]:.2f}/order)')
     print(f'  Cost reduction (best vs worst): {(1-best[1]["cost_mean"]/worst[1]["cost_mean"])*100:.1f}%')
     print(f'{"="*80}')
 
-    # ── Step 6: Save Results ──
+    #  Step 6: Save Results 
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
     rows = [{'strategy': k, **v} for k, v in results.items()]
     pd.DataFrame(rows).to_csv(out_dir / 'pipeline_results.csv', index=False)
-    print(f'\n  💾 Results saved to {out_dir}/pipeline_results.csv')
+    print(f'\n   Results saved to {out_dir}/pipeline_results.csv')
 
-    # ── Step 7 (optional): Full analysis ──
+    #  Step 7 (optional): Full analysis 
     if args.full:
         print(f'\n  Running full analysis (failure cases, edge cases, ethics)...\n')
         from scripts.analysis import (
@@ -180,7 +180,7 @@ Examples:
         analyze_ethics()
 
     elapsed = time.time() - t_start
-    print(f'\n  ✅ Pipeline complete in {elapsed:.1f}s')
+    print(f'\n   Pipeline complete in {elapsed:.1f}s')
     print(f'{"="*70}\n')
 
 

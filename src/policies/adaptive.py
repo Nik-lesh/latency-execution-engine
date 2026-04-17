@@ -61,10 +61,10 @@ class AdaptivePolicy:
         if remaining_bars <= 0 or remaining_qty <= 1e-10:
             return 0.0
 
-        # ─── Base rate: TWAP ───
+        #  Base rate: TWAP 
         base_rate = 1.0 / remaining_bars
 
-        # ─── Volume adjustment ───
+        #  Volume adjustment 
         # volume_imbalance > 1 means more liquid than average → trade more
         vol_imbalance = state.get("volume_imbalance", 1.0)
         if np.isnan(vol_imbalance) or vol_imbalance <= 0:
@@ -73,7 +73,7 @@ class AdaptivePolicy:
         # Smooth: log transform prevents extreme values from dominating
         vol_factor = 1.0 + self.volume_weight * np.log(max(vol_imbalance, 0.1))
 
-        # ─── Volatility adjustment ───
+        #  Volatility adjustment 
         # Higher volatility → more timing risk → trade faster
         rolling_vol = state.get("rolling_volatility", 0)
         if np.isnan(rolling_vol) or rolling_vol <= 0:
@@ -84,7 +84,7 @@ class AdaptivePolicy:
             vol_adj = 1.0 + self.volatility_weight * (vol_ratio - 1.0)
             vol_adj = np.clip(vol_adj, 0.5, 2.0)
 
-        # ─── Spread adjustment ───
+        #  Spread adjustment 
         # Higher spread → more expensive → trade less
         spread_proxy = state.get("spread_proxy", 0)
         if np.isnan(spread_proxy) or spread_proxy <= 0:
@@ -95,10 +95,10 @@ class AdaptivePolicy:
             spread_adj = 1.0 - self.spread_weight * (spread_ratio - 1.0)
             spread_adj = np.clip(spread_adj, 0.3, 1.5)
 
-        # ─── Combine adjustments ───
+        #  Combine adjustments 
         adjusted_rate = base_rate * vol_factor * vol_adj * spread_adj
 
-        # ─── Urgency override ───
+        #  Urgency override 
         time_remaining_pct = remaining_bars / time_horizon
         inventory_pct = remaining_qty / total_qty
 
@@ -111,7 +111,7 @@ class AdaptivePolicy:
             if inventory_pct > 0.5 and time_remaining_pct < 0.15:
                 adjusted_rate = max(adjusted_rate, 0.3)
 
-        # ─── Clip to bounds ───
+        #  Clip to bounds 
         adjusted_rate = np.clip(adjusted_rate, self.min_rate, self.max_rate)
 
         return float(adjusted_rate)

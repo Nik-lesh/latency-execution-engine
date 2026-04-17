@@ -27,9 +27,7 @@ from src.utils.errors import (
 )
 
 
-# ─────────────────────────────────────────────
 # PipelineError
-# ─────────────────────────────────────────────
 
 class TestPipelineError:
     def test_is_exception(self):
@@ -57,9 +55,7 @@ class TestPipelineError:
         assert err.recoverable is True
 
 
-# ─────────────────────────────────────────────
 # safe_execute
-# ─────────────────────────────────────────────
 
 class TestSafeExecute:
     def test_passes_through_return_value(self):
@@ -126,9 +122,7 @@ class TestSafeExecute:
         assert my_function.__name__ == "my_function"
 
 
-# ─────────────────────────────────────────────
 # validate_dataframe
-# ─────────────────────────────────────────────
 
 def _make_valid_df(n: int = 200) -> pd.DataFrame:
     rng = np.random.default_rng(0)
@@ -182,9 +176,7 @@ class TestValidateDataframe:
         assert validate_dataframe(df, required_cols=["close"], min_rows=5) is True
 
 
-# ─────────────────────────────────────────────
 # validate_order
-# ─────────────────────────────────────────────
 
 class TestValidateOrder:
     def test_valid_order_returns_true(self):
@@ -214,9 +206,7 @@ class TestValidateOrder:
         assert validate_order(qty=1.0, horizon=3) is True
 
 
-# ─────────────────────────────────────────────
 # load_config
-# ─────────────────────────────────────────────
 
 class TestLoadConfig:
     def test_default_config_loads(self):
@@ -257,9 +247,7 @@ class TestLoadConfig:
             load_config(tmp_path)
 
 
-# ─────────────────────────────────────────────
 # get_nested
-# ─────────────────────────────────────────────
 
 class TestGetNested:
     def setup_method(self):

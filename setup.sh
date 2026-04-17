@@ -1,5 +1,4 @@
 #!/bin/bash
-# ══════════════════════════════════════════════════════════
 # Latency-Aware Execution Engine — Automated Setup
 #
 # Usage:
@@ -11,18 +10,17 @@
 #   3. Runs the test suite
 #   4. Runs the full pipeline on synthetic data (no download needed)
 #   5. Reports results
-# ══════════════════════════════════════════════════════════
 
 set -e  # Exit on any error
 
 echo ""
-echo "══════════════════════════════════════════════════════════"
+echo ""
 echo "  LATENCY-AWARE EXECUTION ENGINE — SETUP"
-echo "══════════════════════════════════════════════════════════"
+echo ""
 echo ""
 
-# ── Step 1: Virtual environment ──
-echo "📦 Step 1: Creating virtual environment..."
+#  Step 1: Virtual environment 
+echo " Step 1: Creating virtual environment..."
 if [ ! -d "venv" ]; then
     python3 -m venv venv
     echo "   Created venv/"
@@ -33,43 +31,43 @@ fi
 source venv/bin/activate
 echo "   Activated: $(python3 --version)"
 
-# ── Step 2: Install dependencies ──
+#  Step 2: Install dependencies 
 echo ""
-echo "📦 Step 2: Installing dependencies..."
+echo " Step 2: Installing dependencies..."
 pip install --upgrade pip -q
 pip install -r requirements.txt -q
-echo "   ✅ All dependencies installed"
+echo "    All dependencies installed"
 
-# ── Step 3: Verify imports ──
+#  Step 3: Verify imports 
 echo ""
-echo "🔍 Step 3: Verifying package imports..."
+echo " Step 3: Verifying package imports..."
 python3 -c "
 import src
 print(f'   src v{src.__version__}')
 from src.data.schemas import KlineSchema
-print('   ✅ src.data')
+print('    src.data')
 from src.features.engine import compute_all_features
-print('   ✅ src.features')
+print('    src.features')
 from src.simulator.engine import Order, simulate_execution
 from src.simulator.impact import ImpactParams
-print('   ✅ src.simulator')
+print('    src.simulator')
 from src.policies.baselines import TWAPPolicy, VWAPPolicy
-print('   ✅ src.policies')
+print('    src.policies')
 import torch
-print(f'   ✅ PyTorch {torch.__version__}')
+print(f'    PyTorch {torch.__version__}')
 print('   All imports OK')
 "
 
-# ── Step 4: Run tests ──
+#  Step 4: Run tests 
 echo ""
-echo "🧪 Step 4: Running test suite..."
+echo " Step 4: Running test suite..."
 python3 tests/test_simulator/test_engine_and_impact.py
 echo ""
 python3 tests/test_policies/test_all_policies.py
 
-# ── Step 5: Run pipeline on synthetic data ──
+#  Step 5: Run pipeline on synthetic data 
 echo ""
-echo "🚀 Step 5: Running pipeline (synthetic data — no download needed)..."
+echo " Step 5: Running pipeline (synthetic data — no download needed)..."
 python3 -c "
 import sys, numpy as np, pandas as pd
 sys.path.insert(0, '.')
@@ -105,7 +103,7 @@ starts = rng.integers(100, len(df) - 61, size=100)
 
 print()
 print('  Synthetic Pipeline Results (100 simulations):')
-print('  ' + '─' * 50)
+print('  ' + '' * 50)
 for name, policy in policies.items():
     costs = []
     for si in starts:
@@ -113,15 +111,15 @@ for name, policy in policies.items():
         r = simulate_execution(df, order, policy, int(si), params)
         costs.append(r.total_cost_usd)
     print(f'  {name:<14s} avg cost: \${np.mean(costs):.2f}')
-print('  ' + '─' * 50)
-print('  ✅ Pipeline runs successfully on synthetic data')
+print('  ' + '' * 50)
+print('   Pipeline runs successfully on synthetic data')
 print()
 "
 
-# ── Done ──
+#  Done 
 echo ""
-echo "══════════════════════════════════════════════════════════"
-echo "  ✅ SETUP COMPLETE"
+echo ""
+echo "   SETUP COMPLETE"
 echo ""
 echo "  Next steps:"
 echo "    # Run on real data (if downloaded):"
@@ -132,4 +130,4 @@ echo "    python scripts/run_pipeline.py --data data/processed/BTCUSDT_klines_1m
 echo ""
 echo "    # Train RL agent:"
 echo "    python scripts/train_large.py --data data/processed/BTCUSDT_klines_1m.parquet --qty 50"
-echo "══════════════════════════════════════════════════════════"
+echo ""

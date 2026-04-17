@@ -64,8 +64,8 @@ def process_symbol(
     print(report)
 
     # --- Summary stats (useful for project writeup) ---
-    print(f"  📈 SUMMARY STATISTICS — {symbol}")
-    print(f"  {'─'*50}")
+    print(f"   SUMMARY STATISTICS — {symbol}")
+    print(f"  {''*50}")
     print(f"  Total bars:        {len(df):>15,}")
     print(f"  Total days:        {df[KlineSchema.TIMESTAMP].dt.date.nunique():>15,}")
     print(f"  Avg price:         ${df[KlineSchema.CLOSE].mean():>14,.2f}")
@@ -117,7 +117,7 @@ def main():
     print(f"  VALIDATION SUMMARY")
     print(f"{'='*60}")
     for symbol, passed in results.items():
-        status = "✅ PASSED" if passed else "❌ FAILED"
+        status = " PASSED" if passed else " FAILED"
         print(f"  {symbol:12s} {status}")
     print(f"{'='*60}\n")
 

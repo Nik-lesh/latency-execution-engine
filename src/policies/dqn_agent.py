@@ -48,9 +48,7 @@ except ImportError:
 from src.policies.rl_env import STATE_DIM, N_ACTIONS, ACTION_MAP
 
 
-# ============================================================
 # Training Configuration
-# ============================================================
 
 @dataclass
 class DQNConfig:
@@ -92,9 +90,7 @@ class DQNConfig:
         return self.device
 
 
-# ============================================================
 # Q-Network
-# ============================================================
 
 if TORCH_AVAILABLE:
     class QNetwork(nn.Module):
@@ -119,9 +115,7 @@ if TORCH_AVAILABLE:
             return self.network(x)
 
 
-# ============================================================
 # Replay Buffer
-# ============================================================
 
 class ReplayBuffer:
     """Experience replay buffer for off-policy learning.
@@ -151,9 +145,7 @@ class ReplayBuffer:
         return len(self.buffer)
 
 
-# ============================================================
 # DQN Agent
-# ============================================================
 
 class DQNAgent:
     """Double DQN Agent for optimal execution.

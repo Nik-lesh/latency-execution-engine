@@ -140,7 +140,7 @@ def main():
                         help="Save results CSV to this path")
     args = parser.parse_args()
 
-    # ─── Load data ───
+    #  Load data 
     if args.synthetic or args.data is None:
         df = make_synthetic_data()
         data_source = "synthetic"
@@ -148,13 +148,13 @@ def main():
         df = load_real_data(args.data)
         data_source = Path(args.data).stem
 
-    # ─── Compute features ───
+    #  Compute features 
     logger.info("Computing features...")
     t0 = time.time()
     df = compute_all_features(df)
     logger.info(f"Features computed in {time.time() - t0:.1f}s")
 
-    # ─── Configure ───
+    #  Configure 
     order = Order(
         symbol="BTCUSDT",
         side="buy",
@@ -171,7 +171,7 @@ def main():
 
     policies = build_policies()
 
-    # ─── Print header ───
+    #  Print header 
     print(f"\n{'='*70}")
     print(f"  EXECUTION STRATEGY BACKTEST")
     print(f"{'='*70}")
@@ -185,8 +185,8 @@ def main():
           f"spread={impact_params.spread_bps} bps")
     print(f"{'='*70}")
 
-    # ─── Run main backtest ───
-    logger.info("\n🚀 Running main backtest...")
+    #  Run main backtest 
+    logger.info("\n Running main backtest...")
     t0 = time.time()
 
     all_stats = run_backtest(
@@ -205,10 +205,10 @@ def main():
 
     print_comparison_table(all_stats)
 
-    # ─── Regime analysis ───
+    #  Regime analysis 
     regime_results = None
     if args.regimes:
-        logger.info("\n🔥 Running regime analysis...")
+        logger.info("\n Running regime analysis...")
         t0 = time.time()
 
         regime_results = run_regime_backtest(
@@ -228,10 +228,10 @@ def main():
 
         logger.info(f"Regime analysis done in {time.time() - t0:.1f}s")
 
-    # ─── Build results DataFrame (needed for figures and CSV export) ───
+    #  Build results DataFrame (needed for figures and CSV export) 
     results_df = generate_results_dataframe(all_stats)
 
-    # ─── Generate figures ───
+    #  Generate figures 
     try:
         from src.evaluation.visualizations import (
             plot_strategy_comparison, plot_efficient_frontier,
@@ -239,7 +239,7 @@ def main():
         )
 
         fig_dir = f"reports/figures/{data_source}"
-        logger.info(f"\n📊 Generating figures to {fig_dir}/...")
+        logger.info(f"\n Generating figures to {fig_dir}/...")
 
         # Strategy comparison bar chart
         plot_strategy_comparison(
@@ -301,7 +301,7 @@ def main():
     except Exception as e:
         logger.warning(f"Figure generation failed: {e}")
 
-    # ─── Save results CSV ───
+    #  Save results CSV 
 
     if args.output:
         output_path = Path(args.output)
@@ -315,7 +315,7 @@ def main():
         results_df.to_csv(default_path, index=False)
         logger.info(f"Results saved to {default_path}")
 
-    # ─── Key findings ───
+    #  Key findings 
     print(f"\n{'='*70}")
     print(f"  KEY FINDINGS")
     print(f"{'='*70}")

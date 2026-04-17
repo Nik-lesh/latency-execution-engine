@@ -35,9 +35,7 @@ from src.simulator.impact import ImpactParams, compute_execution_price
 logger = logging.getLogger(__name__)
 
 
-# ============================================================
 # Data structures
-# ============================================================
 
 @dataclass
 class Order:
@@ -92,9 +90,9 @@ class ExecutionResult:
     def summary(self) -> str:
         """Human-readable summary of execution results."""
         return (
-            f"\n{'─'*55}\n"
+            f"\n{''*55}\n"
             f"  EXECUTION RESULT — {self.order.symbol} {self.order.side.upper()}\n"
-            f"{'─'*55}\n"
+            f"{''*55}\n"
             f"  Order:            {self.order.total_quantity:.4f} over "
             f"{self.order.time_horizon_bars} bars\n"
             f"  Executed:         {self.total_executed:.4f} "
@@ -102,23 +100,21 @@ class ExecutionResult:
             f"  Arrival price:    ${self.arrival_price:,.2f}\n"
             f"  Avg exec price:   ${self.avg_exec_price:,.2f}\n"
             f"  Final price:      ${self.final_price:,.2f}\n"
-            f"  ────────────────────────────────\n"
+            f"  \n"
             f"  Impl. Shortfall:  {self.implementation_shortfall_bps:+.2f} bps\n"
             f"  VWAP Slippage:    {self.vwap_slippage_bps:+.2f} bps\n"
             f"  Total Cost:       ${self.total_cost_usd:,.2f}\n"
             f"  Child Orders:     {self.n_child_orders}\n"
-            f"  ────────────────────────────────\n"
+            f"  \n"
             f"  Cost Breakdown:\n"
             f"    Spread:         ${self.cost_breakdown['spread']:,.2f}\n"
             f"    Temp Impact:    ${self.cost_breakdown['temporary']:,.2f}\n"
             f"    Perm Impact:    ${self.cost_breakdown['permanent']:,.2f}\n"
-            f"{'─'*55}\n"
+            f"{''*55}\n"
         )
 
 
-# ============================================================
 # Policy Interface (Protocol)
-# ============================================================
 
 class ExecutionPolicy(Protocol):
     """Interface that all execution policies must implement.
@@ -152,9 +148,7 @@ class ExecutionPolicy(Protocol):
         ...
 
 
-# ============================================================
 # The Simulator
-# ============================================================
 
 def simulate_execution(
     df: pd.DataFrame,

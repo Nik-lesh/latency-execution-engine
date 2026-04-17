@@ -47,7 +47,7 @@ class ValidationReport:
     issues: list[str]
 
     def __str__(self) -> str:
-        status = "✅ PASSED" if self.is_valid else "❌ FAILED"
+        status = " PASSED" if self.is_valid else " FAILED"
         report = [
             f"\n{'='*60}",
             f"  DATA VALIDATION REPORT — {status}",
@@ -65,7 +65,7 @@ class ValidationReport:
         if self.issues:
             report.append(f"\n  Issues found:")
             for issue in self.issues:
-                report.append(f"    ⚠️  {issue}")
+                report.append(f"      {issue}")
 
         report.append(f"{'='*60}\n")
         return "\n".join(report)

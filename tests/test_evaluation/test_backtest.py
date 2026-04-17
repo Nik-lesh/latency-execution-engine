@@ -28,9 +28,7 @@ from src.simulator.engine import ChildOrder, ExecutionResult, Order
 from src.simulator.impact import ImpactParams
 
 
-# ─────────────────────────────────────────────
 # Helpers
-# ─────────────────────────────────────────────
 
 def _make_klines(n: int = 2000, seed: int = 42) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
@@ -95,9 +93,7 @@ def _make_execution_result(
     )
 
 
-# ─────────────────────────────────────────────
 # compute_strategy_stats
-# ─────────────────────────────────────────────
 
 class TestComputeStrategyStats:
     def test_empty_results_returns_zero_stats(self):
@@ -151,9 +147,7 @@ class TestComputeStrategyStats:
         assert stats.name == "MyPolicy"
 
 
-# ─────────────────────────────────────────────
 # run_backtest
-# ─────────────────────────────────────────────
 
 class TestRunBacktest:
     def setup_method(self):
@@ -215,9 +209,7 @@ class TestRunBacktest:
         assert stats["TWAP"].n_simulations == 10
 
 
-# ─────────────────────────────────────────────
 # classify_regimes
-# ─────────────────────────────────────────────
 
 class TestClassifyRegimes:
     def test_returns_series_same_length(self):
@@ -246,9 +238,7 @@ class TestClassifyRegimes:
             classify_regimes(df)
 
 
-# ─────────────────────────────────────────────
 # generate_results_dataframe
-# ─────────────────────────────────────────────
 
 class TestGenerateResultsDataframe:
     def test_correct_columns(self):
@@ -276,9 +266,7 @@ class TestGenerateResultsDataframe:
         assert len(result_df) == 0
 
 
-# ─────────────────────────────────────────────
 # print_comparison_table (smoke test)
-# ─────────────────────────────────────────────
 
 class TestPrintComparisonTable:
     def test_does_not_crash(self, capsys):

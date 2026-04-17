@@ -40,10 +40,10 @@ class Results:
     def check(self, name, cond, detail=""):
         if cond:
             self.passed += 1
-            print(f"  ✅ {name}")
+            print(f"   {name}")
         else:
             self.failed += 1
-            print(f"  ❌ {name}: {detail}")
+            print(f"   {name}: {detail}")
 
     def summary(self):
         t = self.passed + self.failed
@@ -55,12 +55,12 @@ class Results:
 
 def test_baseline_policies():
     """Test TWAP, VWAP, Immediate, and Almgren-Chriss policies."""
-    print("\n📋 BASELINE POLICY TESTS")
+    print("\n BASELINE POLICY TESTS")
     r = Results()
 
     from src.policies.baselines import ImmediatePolicy, TWAPPolicy, VWAPPolicy, AlmgrenChrissPolicy
 
-    # ── ImmediatePolicy ──
+    #  ImmediatePolicy 
     policy = ImmediatePolicy()
     state0 = {"bar_index": 0, "remaining_quantity": 1.0, "remaining_bars": 60,
               "total_quantity": 1.0, "time_horizon": 60}
@@ -71,7 +71,7 @@ def test_baseline_policies():
     action1 = policy.get_action(state1)
     r.check("immediate: bar 1 → do nothing", action1 == 0.0)
 
-    # ── TWAPPolicy ──
+    #  TWAPPolicy 
     policy = TWAPPolicy()
     # Bar 0 of 60: should execute 1/60
     action = policy.get_action({"remaining_bars": 60, "bar_index": 0})
@@ -81,7 +81,7 @@ def test_baseline_policies():
     action = policy.get_action({"remaining_bars": 1, "bar_index": 59})
     r.check("TWAP: last bar → 1.0", abs(action - 1.0) < 1e-6)
 
-    # ── VWAPPolicy ──
+    #  VWAPPolicy 
     policy = VWAPPolicy(volume_sensitivity=1.0)
     # Normal volume → similar to TWAP
     action = policy.get_action({"remaining_bars": 60, "bar_index": 0,
@@ -96,7 +96,7 @@ def test_baseline_policies():
     r.check("VWAP: high vol → trade more", action_high > action_low,
             f"high={action_high:.4f} low={action_low:.4f}")
 
-    # ── AlmgrenChrissPolicy ──
+    #  AlmgrenChrissPolicy 
     policy = AlmgrenChrissPolicy(risk_aversion=0.5)
     action = policy.get_action({"bar_index": 0, "remaining_quantity": 1.0,
                                  "remaining_bars": 60, "total_quantity": 1.0,
@@ -118,7 +118,7 @@ def test_baseline_policies():
 
 def test_rl_environment():
     """Test the Gym-style execution environment."""
-    print("\n🎮 RL ENVIRONMENT TESTS")
+    print("\n RL ENVIRONMENT TESTS")
     r = Results()
 
     from src.features.engine import compute_all_features
@@ -174,7 +174,7 @@ def test_rl_environment():
 
 def test_dqn_agent():
     """Test the DQN agent: creation, action selection, learning, save/load."""
-    print("\n🧠 DQN AGENT TESTS")
+    print("\n DQN AGENT TESTS")
     r = Results()
 
     try:
@@ -247,7 +247,7 @@ def test_dqn_agent():
 
 def test_mini_training_loop():
     """Test that the full training loop runs without errors."""
-    print("\n🏋️ MINI TRAINING LOOP TEST")
+    print("\n MINI TRAINING LOOP TEST")
     r = Results()
 
     try:
@@ -302,7 +302,7 @@ def test_mini_training_loop():
 
 def test_policy_comparison():
     """Test that different policies produce different costs (sanity check)."""
-    print("\n⚔️ POLICY COMPARISON TEST")
+    print("\n POLICY COMPARISON TEST")
     r = Results()
 
     from src.features.engine import compute_all_features
@@ -347,9 +347,7 @@ def test_policy_comparison():
     return r
 
 
-# ─────────────────────────────────────────────────────────────
 # AdaptivePolicy and ConservativeAdaptivePolicy tests
-# ─────────────────────────────────────────────────────────────
 
 class TestAdaptivePolicy:
     """Tests for AdaptivePolicy (feature-based heuristic)."""

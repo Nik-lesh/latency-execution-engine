@@ -176,9 +176,9 @@ def check_environment():
 
     if issues:
         for i in issues:
-            logger.error(f"  ❌ {i}")
+            logger.error(f"   {i}")
         raise PipelineError("Environment check",
             f"{len(issues)} missing dependencies. Run: pip install -r requirements.txt")
 
-    logger.info("  ✅ All dependencies available")
+    logger.info("   All dependencies available")
     return True

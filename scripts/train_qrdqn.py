@@ -48,7 +48,7 @@ import torch.optim as optim
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger(__name__)
 
-# ── Constants ──
+#  Constants 
 ACTIONS = np.array([0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 3.0])
 N_ACT = len(ACTIONS)
 VWAP_IDX = 3
@@ -56,9 +56,7 @@ STATE_DIM = 14
 N_QUANTILES = 51  # Standard from Dabney et al.
 
 
-# ══════════════════════════════════════════
 # Environment (same as train_large.py)
-# ══════════════════════════════════════════
 class Env:
     def __init__(self, df, qty=50.0, horizon=60, impact=0.3, max_part=0.15, name=''):
         self.qty, self.horizon, self.impact, self.max_part, self.name = qty, horizon, impact, max_part, name
@@ -164,9 +162,7 @@ class Env:
                 'vs_twap': (tw - self.cost) / n * 10_000 if n > 0 else 0}
 
 
-# ══════════════════════════════════════════
 # QR-DQN Network
-# ══════════════════════════════════════════
 class QRNet(nn.Module):
     """Quantile Regression DQN network.
 
@@ -222,9 +218,7 @@ class QRNet(nn.Module):
             return sorted_q[:, :, :k].mean(dim=2)
 
 
-# ══════════════════════════════════════════
 # QR-DQN Agent
-# ══════════════════════════════════════════
 class QRDQNAgent:
     def __init__(self, lr=3e-4, n_quantiles=N_QUANTILES):
         self.n_quantiles = n_quantiles
@@ -316,7 +310,7 @@ class QRDQNAgent:
             # Target: r + γ * next_quantiles * (1 - done)
             target = r.unsqueeze(1) + self.gamma * next_q * (1 - d.unsqueeze(1))  # (bs, N_Q)
 
-        # ── Quantile Huber Loss ──
+        #  Quantile Huber Loss 
         # For each pair (i,j): compute td = target_j - current_i
         # Shape: (bs, N_Q, N_Q) via broadcasting
         td = target.unsqueeze(1) - curr_q.unsqueeze(2)  # (bs, N_Q_curr, N_Q_target)
@@ -369,9 +363,7 @@ class QRDQNAgent:
         self.eps = ck['eps']
 
 
-# ══════════════════════════════════════════
 # Evaluation with risk levels
-# ══════════════════════════════════════════
 
 def evaluate(agent, env, n=500, cvar_alpha=None):
     """Evaluate agent at a specific risk level."""
@@ -423,9 +415,7 @@ def evaluate_risk_frontier(agent, env, n=500):
     return frontier
 
 
-# ══════════════════════════════════════════
 # Data loading
-# ══════════════════════════════════════════
 
 def load_asset(data_dir, symbol):
     from src.features.engine import compute_all_features
@@ -443,9 +433,7 @@ def load_asset(data_dir, symbol):
     return compute_all_features(train), compute_all_features(val), compute_all_features(test)
 
 
-# ══════════════════════════════════════════
 # Main
-# ══════════════════════════════════════════
 
 def main():
     parser = argparse.ArgumentParser()
@@ -464,7 +452,7 @@ def main():
 
     from src.features.engine import compute_all_features
 
-    # ── Load data ──
+    #  Load data 
     if args.synthetic:
         log.info('Generating synthetic data...')
         rng = np.random.default_rng(42)
@@ -498,7 +486,7 @@ def main():
     val_env = Env(val_df, qty=args.qty, name='BTC-val')
     test_env = Env(test_df, qty=args.qty, name='BTC-test')
 
-    # ── Train ──
+    #  Train 
     if args.train:
         agent = QRDQNAgent(lr=3e-4)
         sd = Path(args.save_dir); sd.mkdir(parents=True, exist_ok=True)
@@ -547,17 +535,17 @@ def main():
                 v = evaluate(agent, val_env, n=500)
                 el = time.time() - t0; mk = ''
                 if v['vs_vwap'] > best_vwap:
-                    best_vwap = v['vs_vwap']; agent.save(sd / 'best.pt'); mk = ' ★'
+                    best_vwap = v['vs_vwap']; agent.save(sd / 'best.pt'); mk = ' '
                 eta = (n_ep - ep) / max(ep / el, 0.1) / 3600
 
                 history.append({'ep': ep, 'vs_vwap': v['vs_vwap'], 'vs_twap': v['vs_twap'],
                                 'beat_vwap': v['beat_vwap'], 'beat_twap': v['beat_twap'],
                                 'cost_mean': v['cost_mean'], 'cost_std': v['cost_std']})
 
-                log.info(f'  Ep {ep:>6,}/{n_ep:,} │ ε={agent.eps:.3f} │ '
-                         f'vsVWAP: {v["vs_vwap"]:>+7.3f} beat:{v["beat_vwap"]:>3.0f}% │ '
-                         f'vsTWAP: {v["vs_twap"]:>+7.3f} beat:{v["beat_twap"]:>3.0f}% │ '
-                         f'cost: ${v["cost_mean"]:.0f}±{v["cost_std"]:.0f} │ '
+                log.info(f'  Ep {ep:>6,}/{n_ep:,}  ε={agent.eps:.3f}  '
+                         f'vsVWAP: {v["vs_vwap"]:>+7.3f} beat:{v["beat_vwap"]:>3.0f}%  '
+                         f'vsTWAP: {v["vs_twap"]:>+7.3f} beat:{v["beat_twap"]:>3.0f}%  '
+                         f'cost: ${v["cost_mean"]:.0f}±{v["cost_std"]:.0f}  '
                          f'{ep/el:.1f}/s ETA:{eta:.1f}h{mk}')
 
             if ep % 5000 == 0:
@@ -565,7 +553,7 @@ def main():
 
         agent.save(sd / 'final.pt')
         pd.DataFrame(history).to_csv(sd / 'training_history.csv', index=False)
-        log.info(f'\n✅ QR-DQN training done: {n_ep:,} ep in {(time.time()-t0)/3600:.1f}h')
+        log.info(f'\n QR-DQN training done: {n_ep:,} ep in {(time.time()-t0)/3600:.1f}h')
 
         # Final test
         bp = sd / 'best.pt'
@@ -575,7 +563,7 @@ def main():
         log.info(f'Test: vsVWAP={r["vs_vwap"]:+.3f} beat={r["beat_vwap"]:.0f}% | '
                  f'vsTWAP={r["vs_twap"]:+.3f} beat={r["beat_twap"]:.0f}%')
 
-    # ── Risk Frontier ──
+    #  Risk Frontier 
     if args.eval or args.frontier:
         agent = QRDQNAgent()
         agent.load(args.model)
@@ -589,7 +577,7 @@ def main():
         frontier = evaluate_risk_frontier(agent, test_env, n=500)
 
         print(f'\n  {"Risk Level":<16s} {"Cost($)":>12s} {"Cost Std":>12s} {"vs TWAP":>10s} {"Beat%":>7s}')
-        print(f'  {"─"*60}')
+        print(f'  {""*60}')
         for f in frontier:
             print(f'  {f["label"]:<16s} ${f["cost_mean"]:>11.2f} ${f["cost_std"]:>11.2f} '
                   f'{f["vs_twap"]:>+10.2f} {f["beat_twap"]:>6.0f}%')
@@ -662,7 +650,7 @@ def main():
         except ImportError:
             log.info('matplotlib not available — skip plot')
 
-    # ── Compare DQN vs QR-DQN ──
+    #  Compare DQN vs QR-DQN 
     if args.compare:
         print(f'\n{"="*70}')
         print(f'  DQN vs QR-DQN COMPARISON')
@@ -681,7 +669,7 @@ def main():
 
         print(f'\n  {"Agent":<20s} {"vs VWAP":>10s} {"vs TWAP":>10s} {"Beat TWAP":>10s} '
               f'{"Cost($)":>12s} {"Cost Std":>10s}')
-        print(f'  {"─"*74}')
+        print(f'  {""*74}')
 
         # DQN
         # DQN agent doesn't support cvar_alpha, so evaluate manually
@@ -706,7 +694,7 @@ def main():
             print(f'  {label:<20s} {r["vs_vwap"]:>+10.3f} {r["vs_twap"]:>+10.3f} '
                   f'{r["beat_twap"]:>9.0f}% ${r["cost_mean"]:>11.2f} ${r["cost_std"]:>9.2f}')
 
-        print(f'  {"─"*74}')
+        print(f'  {""*74}')
         print(f'  QR-DQN advantage: risk-aware execution with adjustable conservatism')
         print(f'{"="*70}')
 

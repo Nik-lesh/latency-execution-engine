@@ -261,14 +261,14 @@ def main():
                 v=evaluate(agent,venv,n=300); all_vw.append(v['vs_vwap']); all_tw.append(v['vs_twap'])
                 parts.append(f'{sym[:3]}:{v["vs_vwap"]:+.1f}/{v["vs_twap"]:+.1f}')
             avg_vw,avg_tw=np.mean(all_vw),np.mean(all_tw); el=time.time()-t0; mk=''
-            if avg_vw>best_vwap: best_vwap=avg_vw; agent.save(sd/'best.pt'); mk=' ★'
+            if avg_vw>best_vwap: best_vwap=avg_vw; agent.save(sd/'best.pt'); mk=' '
             eta=(n_ep-ep)/max(ep/el,0.1)/3600
-            log.info(f'  Ep {ep:>6,}/{n_ep:,} │ ε={agent.eps:.3f} │ '
-                     f'Avg vw:{avg_vw:>+7.2f} tw:{avg_tw:>+7.2f} │ {" ".join(parts)} │ '
+            log.info(f'  Ep {ep:>6,}/{n_ep:,}  ε={agent.eps:.3f}  '
+                     f'Avg vw:{avg_vw:>+7.2f} tw:{avg_tw:>+7.2f}  {" ".join(parts)}  '
                      f'{ep/el:.1f}/s ETA:{eta:.1f}h{mk}')
         if ep%5000==0: agent.save(sd/f'checkpoint_{ep}.pt')
 
-    agent.save(sd/'final.pt'); log.info(f'\n✅ Done: {n_ep:,} ep in {(time.time()-t0)/3600:.1f}h')
+    agent.save(sd/'final.pt'); log.info(f'\n Done: {n_ep:,} ep in {(time.time()-t0)/3600:.1f}h')
 
     bp=sd/'best.pt'
     if bp.exists(): agent.load(bp)
@@ -278,17 +278,17 @@ def main():
     print(f'  OUT-OF-SAMPLE — {args.qty} BTC | Multi-Asset (2024 H2)')
     print(f'{"="*80}')
     print(f'  {"Asset":<12s} {"vs VWAP":>12s} {"Beat%":>7s} {"vs TWAP":>12s} {"Beat%":>7s}')
-    print(f'  {"─"*52}')
+    print(f'  {""*52}')
     all_vw,all_tw=[],[]
     for sym,tenv in test_envs.items():
         r=evaluate(agent,tenv,n=500)
-        mk='✅' if r['vs_vwap']>0 else '➖' if abs(r['vs_vwap'])<1.0 else '❌'
+        mk='' if r['vs_vwap']>0 else '' if abs(r['vs_vwap'])<1.0 else ''
         print(f'  {sym:<12s} {r["vs_vwap"]:>+12.3f} {r["beat_vwap"]:>6.0f}%  {r["vs_twap"]:>+12.3f} {r["beat_twap"]:>6.0f}%  {mk}')
         all_vw.append(r['vs_vwap']); all_tw.append(r['vs_twap'])
-    print(f'  {"─"*52}')
+    print(f'  {""*52}')
     print(f'  {"AVERAGE":<12s} {np.mean(all_vw):>+12.3f} {"":>7s} {np.mean(all_tw):>+12.3f}')
     print(f'{"="*80}')
-    if np.mean(all_tw)>0: print(f'\n  ✅ Beats TWAP across all assets (avg {np.mean(all_tw):+.1f} bps)')
+    if np.mean(all_tw)>0: print(f'\n   Beats TWAP across all assets (avg {np.mean(all_tw):+.1f} bps)')
     rows=[]
     for sym,tenv in test_envs.items():
         r=evaluate(agent,tenv,n=500); rows.append({'asset':sym,**r})

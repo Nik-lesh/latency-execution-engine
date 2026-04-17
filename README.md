@@ -1,6 +1,7 @@
 # Latency-Aware Execution Engine for Portfolio Rebalancing
 
 [![Tests](https://github.com/Nik-lesh/latency-execution-engine/actions/workflows/tests.yml/badge.svg)](https://github.com/Nik-lesh/latency-execution-engine/actions/workflows/tests.yml)
+
 <!-- [![codecov](https://codecov.io/gh/Nik-lesh/latency-execution-engine/graph/badge.svg)](https://codecov.io/gh/Nik-lesh/latency-execution-engine) -->
 
 A production-quality trade execution system that minimizes slippage on large cryptocurrency orders using reinforcement learning. Trained on 7.5M bars of real Binance market data across 3 assets, evaluated walk-forward on fully out-of-sample 2024 data, and validated against 98M real tick-level trades.
@@ -118,48 +119,39 @@ python -m pytest tests/test_utils/ -v
 
 ```
 Raw Market Data (Binance OHLCV + Tick Trades)
-        │
-        ▼
-┌──────────────────┐
-│  Data Ingestion   │  download_data.py, validate_data.py
-│  & Validation     │  → Schema validation, 7 quality checks
-│                   │  → 2.6M bars per asset, 126 GB tick data
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│  Feature          │  src/features/engine.py
-│  Engineering      │  → 14 features: volatility, volume, spread,
-│                   │    momentum, time-of-day encoding
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│  Execution        │  src/simulator/impact.py + engine.py
-│  Simulator        │  → Almgren-Chriss impact model
-│                   │  → Variable spread from real data
-│                   │  → Cost = spread + η × price × part^1.5
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-┌────────┐ ┌─────────────┐
-│Baselines│ │ RL Agent     │
-│ TWAP   │ │ Double DQN   │  14-dim state, 7 VWAP-relative actions
-│ VWAP   │ │ + Dueling    │  Terminal reward: savings vs VWAP in bps
-│ A-C    │ │ + PER        │  50K episodes, 3 assets
-│ Immed. │ │ + LayerNorm  │
-└───┬────┘ └──────┬──────┘
-    │              │
-    ▼              ▼
-┌──────────────────┐
-│  Evaluation       │  Monte Carlo (500+ sims per strategy)
-│                   │  Walk-forward: Train 2020-23 → Test 2024 H2
-│  → Regime analysis│  Cross-asset generalization (BTC, ETH, SOL)
-│  → Tick-level     │  98M real trade validation
-│  → Failure cases  │  Edge cases, limitations, ethics
-└──────────────────┘
+
+
+  Data Ingestion     download_data.py, validate_data.py
+  & Validation       → Schema validation, 7 quality checks
+                     → 2.6M bars per asset, 126 GB tick data
+
+
+  Feature            src/features/engine.py
+  Engineering        → 14 features: volatility, volume, spread,
+                       momentum, time-of-day encoding
+
+
+  Execution          src/simulator/impact.py + engine.py
+  Simulator          → Almgren-Chriss impact model
+                     → Variable spread from real data
+                     → Cost = spread + η × price × part^1.5
+
+
+
+
+Baselines  RL Agent
+ TWAP     Double DQN     14-dim state, 7 VWAP-relative actions
+ VWAP     + Dueling      Terminal reward: savings vs VWAP in bps
+ A-C      + PER          50K episodes, 3 assets
+ Immed.   + LayerNorm
+
+
+
+  Evaluation         Monte Carlo (500+ sims per strategy)
+                     Walk-forward: Train 2020-23 → Test 2024 H2
+  → Regime analysis  Cross-asset generalization (BTC, ETH, SOL)
+  → Tick-level       98M real trade validation
+  → Failure cases    Edge cases, limitations, ethics
 ```
 
 ---
@@ -168,60 +160,60 @@ Raw Market Data (Binance OHLCV + Tick Trades)
 
 ```
 latency-execution-engine/
-├── src/                            # Source code (Python package)
-│   ├── __init__.py                 # v1.0.0
-│   ├── data/
-│   │   ├── schemas.py              # KlineSchema, TradeSchema
-│   │   ├── loader.py               # Binance CSV/Parquet loader
-│   │   └── validator.py            # 7 data quality checks
-│   ├── features/
-│   │   └── engine.py               # 14 execution-relevant features
-│   ├── simulator/
-│   │   ├── impact.py               # Almgren-Chriss market impact model
-│   │   └── engine.py               # Policy-agnostic execution simulator
-│   ├── policies/
-│   │   ├── baselines.py            # Immediate, TWAP, VWAP, A-C
-│   │   ├── rl_env.py               # Gym-style RL environment
-│   │   └── dqn_agent.py            # Double DQN + PER + dueling
-│   ├── evaluation/
-│   │   ├── backtest.py             # Monte Carlo backtester
-│   │   └── visualizations.py       # Plot utilities
-│   └── utils/
-│       ├── config.py               # YAML config loader
-│       └── errors.py               # PipelineError, safe_execute, validate helpers
-├── scripts/                        # CLI tools
-│   ├── download_data.py            # Data download with retry
-│   ├── validate_data.py            # Quality checks + Parquet export
-│   ├── run_backtest.py             # Baseline strategy comparison
-│   ├── run_pipeline.py             # Single-command end-to-end pipeline
-│   ├── train_large.py              # DQN training (large orders, sweep)
-│   ├── train_multi.py              # Multi-asset training (BTC+ETH+SOL)
-│   ├── eval_ticks.py               # Tick-level evaluation (98M trades)
-│   ├── analysis.py                 # Failure/edge/ethics analysis
-│   ├── generate_figures.py         # Publication-quality plots
-│   └── parse_log.py                # Training log → CSV
-├── tests/                          # 176 tests
-│   ├── test_data/
-│   │   └── test_loader_and_validator.py  # schemas, CSV loader, validator
-│   ├── test_features/
-│   │   └── test_engine.py               # all feature functions, edge cases
-│   ├── test_simulator/
-│   │   └── test_engine_and_impact.py    # impact model, A-C trajectory, simulator
-│   ├── test_policies/
-│   │   └── test_all_policies.py         # baselines, adaptive, RL env, DQN agent
-│   ├── test_evaluation/
-│   │   └── test_backtest.py             # Monte Carlo backtester, regime analysis
-│   └── test_utils/
-│       └── test_errors_and_config.py    # PipelineError, safe_execute, config loader
-├── configs/default.yaml            # Centralized hyperparameters
-├── notebooks/                      # Colab training notebooks
-├── models/                         # Saved checkpoints (best.pt, final.pt)
-├── reports/figures/                 # Generated plots (4 figures)
-├── data/                           # Market data (gitignored)
-├── .github/
-│   └── workflows/
-│       └── tests.yml               # CI: runs test suite on push/PR to main
-└── .gitignore
+ src/                            # Source code (Python package)
+    __init__.py                 # v1.0.0
+    data/
+       schemas.py              # KlineSchema, TradeSchema
+       loader.py               # Binance CSV/Parquet loader
+       validator.py            # 7 data quality checks
+    features/
+       engine.py               # 14 execution-relevant features
+    simulator/
+       impact.py               # Almgren-Chriss market impact model
+       engine.py               # Policy-agnostic execution simulator
+    policies/
+       baselines.py            # Immediate, TWAP, VWAP, A-C
+       rl_env.py               # Gym-style RL environment
+       dqn_agent.py            # Double DQN + PER + dueling
+    evaluation/
+       backtest.py             # Monte Carlo backtester
+       visualizations.py       # Plot utilities
+    utils/
+        config.py               # YAML config loader
+        errors.py               # PipelineError, safe_execute, validate helpers
+ scripts/                        # CLI tools
+    download_data.py            # Data download with retry
+    validate_data.py            # Quality checks + Parquet export
+    run_backtest.py             # Baseline strategy comparison
+    run_pipeline.py             # Single-command end-to-end pipeline
+    train_large.py              # DQN training (large orders, sweep)
+    train_multi.py              # Multi-asset training (BTC+ETH+SOL)
+    eval_ticks.py               # Tick-level evaluation (98M trades)
+    analysis.py                 # Failure/edge/ethics analysis
+    generate_figures.py         # Publication-quality plots
+    parse_log.py                # Training log → CSV
+ tests/                          # 176 tests
+    test_data/
+       test_loader_and_validator.py  # schemas, CSV loader, validator
+    test_features/
+       test_engine.py               # all feature functions, edge cases
+    test_simulator/
+       test_engine_and_impact.py    # impact model, A-C trajectory, simulator
+    test_policies/
+       test_all_policies.py         # baselines, adaptive, RL env, DQN agent
+    test_evaluation/
+       test_backtest.py             # Monte Carlo backtester, regime analysis
+    test_utils/
+        test_errors_and_config.py    # PipelineError, safe_execute, config loader
+ configs/default.yaml            # Centralized hyperparameters
+ notebooks/                      # Colab training notebooks
+ models/                         # Saved checkpoints (best.pt, final.pt)
+ reports/figures/                 # Generated plots (4 figures)
+ data/                           # Market data (gitignored)
+ .github/
+    workflows/
+        tests.yml               # CI: runs test suite on push/PR to main
+ .gitignore
 ```
 
 ---
@@ -301,5 +293,4 @@ Full analysis: `python scripts/analysis.py --data data/processed/BTCUSDT_klines_
 ## Author
 
 - **Nikhilesh Waghmare** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
-- **Aniket Ghosh** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)
 - **Frank Duah** — MS in Artificial Intelligence, Northeastern University (Expected May 2027)

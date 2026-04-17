@@ -29,15 +29,15 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 
-# ── Page config ──
+#  Page config 
 st.set_page_config(
     page_title="Execution Engine — TCA Dashboard",
-    page_icon="📊",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS for dark quant aesthetic ──
+#  Custom CSS for dark quant aesthetic 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap');
@@ -78,7 +78,7 @@ div[data-testid="stMetric"] {
 </style>
 """, unsafe_allow_html=True)
 
-# ── Color palette ──
+#  Color palette 
 COLORS = {
     'immediate': '#ef4444', 'twap': '#3b82f6', 'vwap': '#22c55e',
     'ac': '#a855f7', 'dqn': '#f59e0b', 'qrdqn': '#06b6d4',
@@ -88,9 +88,7 @@ COLORS = {
 PLOTLY_TEMPLATE = 'plotly_dark'
 
 
-# ══════════════════════════════════════════
 # Data loading (cached)
-# ══════════════════════════════════════════
 
 @st.cache_data
 def load_data(data_path):
@@ -194,12 +192,10 @@ def load_training_history():
     return None
 
 
-# ══════════════════════════════════════════
 # Sidebar
-# ══════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("## ⚙️ Configuration")
+    st.markdown("##  Configuration")
 
     data_path = st.text_input(
         "Data path",
@@ -210,7 +206,7 @@ with st.sidebar:
     n_sims = st.slider("Monte Carlo simulations", 100, 1000, 300, 50)
 
     st.markdown("---")
-    st.markdown("### 📋 Project Info")
+    st.markdown("###  Project Info")
     st.markdown("""
     **Latency-Aware Execution Engine**
 
@@ -224,18 +220,14 @@ with st.sidebar:
     """)
 
 
-# ══════════════════════════════════════════
 # Header
-# ══════════════════════════════════════════
 
-st.markdown("# 📊 Latency-Aware Execution Engine")
+st.markdown("#  Latency-Aware Execution Engine")
 st.markdown("##### Transaction Cost Analysis Dashboard — Real-Time Strategy Comparison")
 st.markdown("---")
 
 
-# ══════════════════════════════════════════
 # Top metrics row
-# ══════════════════════════════════════════
 
 try:
     results = run_simulations(data_path, qty, n_sims)
@@ -260,18 +252,16 @@ except Exception as e:
     st.stop()
 
 
-# ══════════════════════════════════════════
 # Tab layout
-# ══════════════════════════════════════════
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🎯 Risk Frontier", "📊 Strategy Comparison",
-    "📈 Execution Trajectory", "🔍 Cost Decomposition",
-    "🧠 Training Progress"
+    " Risk Frontier", " Strategy Comparison",
+    " Execution Trajectory", " Cost Decomposition",
+    " Training Progress"
 ])
 
 
-# ── Tab 1: Efficient Execution Frontier ──
+#  Tab 1: Efficient Execution Frontier 
 with tab1:
     st.markdown("### Efficient Execution Frontier — QR-DQN")
     st.markdown("*Each point is a different risk tolerance. Conservative (CVaR 5%) minimizes worst-case cost. Aggressive (CVaR 95%) maximizes upside.*")
@@ -348,7 +338,7 @@ with tab1:
         st.warning("No frontier data found. Run: `python scripts/train_qrdqn.py --frontier`")
 
 
-# ── Tab 2: Strategy Comparison ──
+#  Tab 2: Strategy Comparison 
 with tab2:
     st.markdown("### Strategy Comparison — All Policies")
 
@@ -409,7 +399,7 @@ with tab2:
     st.dataframe(pd.DataFrame(table_data), use_container_width=True, hide_index=True)
 
 
-# ── Tab 3: Execution Trajectory ──
+#  Tab 3: Execution Trajectory 
 with tab3:
     st.markdown("### Execution Trajectory — Single Episode")
 
@@ -490,7 +480,7 @@ with tab3:
                "Green volume bars = above median volume.")
 
 
-# ── Tab 4: Cost Decomposition ──
+#  Tab 4: Cost Decomposition 
 with tab4:
     st.markdown("### Implementation Shortfall Decomposition")
     st.markdown("*Breaking total execution cost into spread, market impact, and timing components.*")
@@ -569,7 +559,7 @@ with tab4:
     st.plotly_chart(fig3, use_container_width=True)
 
 
-# ── Tab 5: Training Progress ──
+#  Tab 5: Training Progress 
 with tab5:
     st.markdown("### DQN/QR-DQN Training Progress")
 
@@ -658,7 +648,7 @@ with tab5:
         st.code("python scripts/train_qrdqn.py --train --episodes 50000 --qty 50")
 
 
-# ── Footer ──
+#  Footer 
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #64748b; font-size: 0.85em;'>"

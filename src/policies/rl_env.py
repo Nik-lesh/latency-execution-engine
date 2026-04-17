@@ -239,7 +239,6 @@ class ExecutionEnv:
             self._exec_prices.append(exec_price)
             self._exec_quantities.append(actual_quantity)
 
-        # ═══════════════════════════════════════════════════════════
         # REWARD DESIGN v3: Sparse terminal reward
         #
         # The lesson from v1 and v2:
@@ -251,7 +250,6 @@ class ExecutionEnv:
         # Terminal: compare our total cost against what TWAP would have paid.
         #
         # This is the approach used in Ning et al. (2021) and JP Morgan's LOXM.
-        # ═══════════════════════════════════════════════════════════
 
         reward = 0.0
 

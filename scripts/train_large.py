@@ -313,13 +313,13 @@ def train_one(train_df, val_df, qty, n_ep, save_dir):
             v = evaluate(agent, val_env, n=500)
             el = time.time() - t0; mk = ''
             if v['vs_vwap'] > best_vwap:
-                best_vwap = v['vs_vwap']; agent.save(sd / 'best.pt'); mk = ' ★'
+                best_vwap = v['vs_vwap']; agent.save(sd / 'best.pt'); mk = ' '
             eta = (n_ep - ep) / max(ep / el, 0.1) / 3600
-            log.info(f'  Ep {ep:>6,}/{n_ep:,} │ ε={agent.eps:.3f} │ '
+            log.info(f'  Ep {ep:>6,}/{n_ep:,}  ε={agent.eps:.3f}  '
                      f'vsVWAP: {v["vs_vwap"]:>+7.3f}±{v["vs_vwap_std"]:.1f} '
-                     f'beat:{v["beat_vwap"]:>3.0f}% │ '
-                     f'vsTWAP: {v["vs_twap"]:>+7.3f} beat:{v["beat_twap"]:>3.0f}% │ '
-                     f'fill:{v["fill"]:.1%} │ {ep/el:.1f}/s ETA:{eta:.1f}h{mk}')
+                     f'beat:{v["beat_vwap"]:>3.0f}%  '
+                     f'vsTWAP: {v["vs_twap"]:>+7.3f} beat:{v["beat_twap"]:>3.0f}%  '
+                     f'fill:{v["fill"]:.1%}  {ep/el:.1f}/s ETA:{eta:.1f}h{mk}')
         if ep % 5000 == 0: agent.save(sd / f'checkpoint_{ep}.pt')
     agent.save(sd / 'final.pt')
     return agent, best_vwap
@@ -384,7 +384,7 @@ def main():
             test_env = Env(test_df, qty=qty)
             r = evaluate(agent, test_env, n=1000)
             results.append({'qty': qty, **r})
-            log.info(f'  ✅ {qty} BTC: vsVWAP={r["vs_vwap"]:+.3f} beat={r["beat_vwap"]:.0f}% | '
+            log.info(f'   {qty} BTC: vsVWAP={r["vs_vwap"]:+.3f} beat={r["beat_vwap"]:.0f}% | '
                      f'vsTWAP={r["vs_twap"]:+.3f} beat={r["beat_twap"]:.0f}%')
 
         print(f'\n{"="*80}')
@@ -392,9 +392,9 @@ def main():
         print(f'{"="*80}')
         print(f'  {"Order":>8s} {"vs VWAP":>12s} {"Beat%":>7s} {"vs TWAP":>12s} {"Beat%":>7s} '
               f'{"Cost($)":>12s} {"Fill":>6s}')
-        print(f'  {"─"*68}')
+        print(f'  {""*68}')
         for r in results:
-            vmark = '✅' if r['vs_vwap'] > 0 else '➖' if abs(r['vs_vwap']) < 1.0 else '❌'
+            vmark = '' if r['vs_vwap'] > 0 else '' if abs(r['vs_vwap']) < 1.0 else ''
             print(f'  {r["qty"]:>7.0f}  {r["vs_vwap"]:>+12.3f} {r["beat_vwap"]:>6.0f}%  '
                   f'{r["vs_twap"]:>+12.3f} {r["beat_twap"]:>6.0f}%  '
                   f'${r["cost"]:>11.2f}  {r["fill"]:>5.1%}  {vmark}')
@@ -426,23 +426,23 @@ def main():
     print(f'  OUT-OF-SAMPLE — {args.qty} BTC × 1000 episodes (Variable Spread + Impact)')
     print(f'{"="*80}')
     print(f'  {"Strategy":<20s} {"Cost ($)":>14s} {"vs TWAP":>12s} {"vs VWAP":>12s}')
-    print(f'  {"─"*60}')
+    print(f'  {""*60}')
     print(f'  {"TWAP":<20s} ${np.mean(tc):>13.2f} {"baseline":>12s} {"-":>12s}')
     print(f'  {"VWAP":<20s} ${np.mean(vc):>13.2f} '
           f'{(1-np.mean(vc)/np.mean(tc))*100:>+11.1f}% {"baseline":>12s}')
     print(f'  {"ML Agent (ours)":<20s} ${np.mean(dc):>13.2f} '
           f'{(1-np.mean(dc)/np.mean(tc))*100:>+11.1f}% '
           f'{(1-np.mean(dc)/np.mean(vc))*100:>+11.1f}%')
-    print(f'  {"─"*60}')
+    print(f'  {""*60}')
     print(f'  vs VWAP: {np.mean(vv):>+.3f} ± {np.std(vv):.2f} bps | Win: {np.mean([s>0 for s in vv])*100:.0f}%')
     print(f'  vs TWAP: {np.mean(vt):>+.3f} ± {np.std(vt):.2f} bps | Win: {np.mean([s>0 for s in vt])*100:.0f}%')
     if np.mean(vv) > 0:
         saved = np.mean(vc) - np.mean(dc)
-        print(f'\n  ✅ ML AGENT BEATS BOTH TWAP AND VWAP')
+        print(f'\n   ML AGENT BEATS BOTH TWAP AND VWAP')
         print(f'     Saves ${saved:.2f} per {args.qty} BTC order vs VWAP')
         print(f'     Over 1000 orders: ${saved*1000:,.0f} saved')
     elif np.mean(vt) > 0:
-        print(f'\n  ✅ Beats TWAP | ➖ Within {abs(np.mean(vv)):.3f} bps of VWAP')
+        print(f'\n   Beats TWAP |  Within {abs(np.mean(vv)):.3f} bps of VWAP')
     print(f'{"="*80}')
     pd.DataFrame({'qty': [args.qty], 'vs_vwap': [np.mean(vv)], 'vs_twap': [np.mean(vt)],
                    'dqn_cost': [np.mean(dc)], 'vwap_cost': [np.mean(vc)], 'twap_cost': [np.mean(tc)]

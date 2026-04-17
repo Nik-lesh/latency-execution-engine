@@ -104,9 +104,7 @@ def make_synthetic_klines(
     return df
 
 
-# =====================================================================
 # TESTS
-# =====================================================================
 
 class TestSyntheticDataGeneration:
     """Test that our test data generator works correctly."""
@@ -204,9 +202,7 @@ class TestValidation:
         assert report.total_rows == 0
 
 
-# =====================================================================
 # KlineSchema and TradeSchema
-# =====================================================================
 
 class TestKlineSchema:
     def test_required_columns_is_list(self):
@@ -262,9 +258,7 @@ class TestTradeSchema:
             assert isinstance(attr, str)
 
 
-# =====================================================================
 # CSV Loader
-# =====================================================================
 
 import csv
 import tempfile

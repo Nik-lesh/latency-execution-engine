@@ -34,9 +34,7 @@ from src.simulator.impact import ImpactParams
 logger = logging.getLogger(__name__)
 
 
-# ============================================================
 # Aggregated results across many simulations
-# ============================================================
 
 @dataclass
 class StrategyStats:
@@ -70,10 +68,10 @@ class StrategyStats:
 
     def __str__(self) -> str:
         return (
-            f"  {self.name:<20s} │ "
-            f"IS: {self.is_mean:+7.2f} ± {self.is_std:5.2f} bps │ "
-            f"Cost: ${self.cost_mean:8.2f} │ "
-            f"VWAP: {self.vwap_mean:+7.2f} bps │ "
+            f"  {self.name:<20s}  "
+            f"IS: {self.is_mean:+7.2f} ± {self.is_std:5.2f} bps  "
+            f"Cost: ${self.cost_mean:8.2f}  "
+            f"VWAP: {self.vwap_mean:+7.2f} bps  "
             f"Orders: {self.avg_child_orders:5.1f}"
         )
 
@@ -128,9 +126,7 @@ def compute_strategy_stats(
     )
 
 
-# ============================================================
 # Monte Carlo Backtester
-# ============================================================
 
 def run_backtest(
     df: pd.DataFrame,
@@ -228,9 +224,7 @@ def run_backtest(
     return all_stats
 
 
-# ============================================================
 # Regime-Aware Backtesting
-# ============================================================
 
 def classify_regimes(
     df: pd.DataFrame,
@@ -302,7 +296,7 @@ def run_regime_backtest(
         n_sims = min(n_per_regime, len(valid_indices))
         chosen = rng.choice(valid_indices, size=n_sims, replace=False)
 
-        logger.info(f"\n📊 Regime: {regime_name} ({n_sims} simulations)")
+        logger.info(f"\n Regime: {regime_name} ({n_sims} simulations)")
 
         policy_stats = {}
         for policy_name, policy_factory in policies.items():
@@ -332,22 +326,20 @@ def run_regime_backtest(
     return regime_results
 
 
-# ============================================================
 # Report Formatting
-# ============================================================
 
 def print_comparison_table(all_stats: dict[str, StrategyStats]) -> None:
     """Print a formatted comparison table."""
     print(f"\n{'='*90}")
-    print(f"  {'Strategy':<20s} │ {'IS Mean':>8s} {'IS Std':>8s} │ "
-          f"{'Cost Mean':>10s} │ {'VWAP':>8s} │ {'Orders':>7s} │ {'Fill%':>6s}")
-    print(f"  {'─'*20}─┼{'─'*18}─┼{'─'*11}─┼{'─'*9}─┼{'─'*8}─┼{'─'*7}")
+    print(f"  {'Strategy':<20s}  {'IS Mean':>8s} {'IS Std':>8s}  "
+          f"{'Cost Mean':>10s}  {'VWAP':>8s}  {'Orders':>7s}  {'Fill%':>6s}")
+    print(f"  {''*20}{''*18}{''*11}{''*9}{''*8}{''*7}")
 
     for name, stats in all_stats.items():
         print(
-            f"  {name:<20s} │ {stats.is_mean:>+8.2f} {stats.is_std:>8.2f} │ "
-            f"${stats.cost_mean:>9.2f} │ {stats.vwap_mean:>+8.2f} │ "
-            f"{stats.avg_child_orders:>7.1f} │ {stats.fill_rate:>5.1%}"
+            f"  {name:<20s}  {stats.is_mean:>+8.2f} {stats.is_std:>8.2f}  "
+            f"${stats.cost_mean:>9.2f}  {stats.vwap_mean:>+8.2f}  "
+            f"{stats.avg_child_orders:>7.1f}  {stats.fill_rate:>5.1%}"
         )
 
     print(f"{'='*90}\n")
@@ -356,17 +348,17 @@ def print_comparison_table(all_stats: dict[str, StrategyStats]) -> None:
 def print_regime_table(regime_results: dict[str, dict[str, StrategyStats]]) -> None:
     """Print regime-specific comparison."""
     for regime, stats_dict in regime_results.items():
-        emoji = {"low_vol": "😴", "normal": "📊", "high_vol": "🔥"}.get(regime, "")
+        emoji = {"low_vol": "", "normal": "", "high_vol": ""}.get(regime, "")
         print(f"\n  {emoji} REGIME: {regime.upper()}")
-        print(f"  {'─'*70}")
-        print(f"  {'Strategy':<20s} │ {'IS Mean':>8s} {'IS Std':>8s} │ "
-              f"{'Cost':>10s} │ {'N':>5s}")
-        print(f"  {'─'*20}─┼{'─'*18}─┼{'─'*11}─┼{'─'*6}")
+        print(f"  {''*70}")
+        print(f"  {'Strategy':<20s}  {'IS Mean':>8s} {'IS Std':>8s}  "
+              f"{'Cost':>10s}  {'N':>5s}")
+        print(f"  {''*20}{''*18}{''*11}{''*6}")
 
         for name, stats in stats_dict.items():
             print(
-                f"  {name:<20s} │ {stats.is_mean:>+8.2f} {stats.is_std:>8.2f} │ "
-                f"${stats.cost_mean:>9.2f} │ {stats.n_simulations:>5d}"
+                f"  {name:<20s}  {stats.is_mean:>+8.2f} {stats.is_std:>8.2f}  "
+                f"${stats.cost_mean:>9.2f}  {stats.n_simulations:>5d}"
             )
 
 

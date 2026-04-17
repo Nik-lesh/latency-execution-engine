@@ -28,9 +28,7 @@ from src.features.engine import (
 )
 
 
-# ─────────────────────────────────────────────
 # Shared test fixture
-# ─────────────────────────────────────────────
 
 def make_klines(n: int = 500, price: float = 50_000.0, seed: int = 42) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
@@ -56,9 +54,7 @@ def make_klines(n: int = 500, price: float = 50_000.0, seed: int = 42) -> pd.Dat
     })
 
 
-# ─────────────────────────────────────────────
 # FeatureCols
-# ─────────────────────────────────────────────
 
 class TestFeatureCols:
     def test_all_constants_are_strings(self):
@@ -87,9 +83,7 @@ class TestFeatureCols:
         assert len(attrs) == len(set(attrs))
 
 
-# ─────────────────────────────────────────────
 # compute_returns
-# ─────────────────────────────────────────────
 
 class TestComputeReturns:
     def test_adds_required_columns(self):
@@ -132,9 +126,7 @@ class TestComputeReturns:
         assert np.all(np.isfinite(lr.values))
 
 
-# ─────────────────────────────────────────────
 # compute_volatility
-# ─────────────────────────────────────────────
 
 class TestComputeVolatility:
     def test_adds_rolling_vol_column(self):
@@ -183,9 +175,7 @@ class TestComputeVolatility:
         assert nan_count >= 5  # at least min_periods NaNs
 
 
-# ─────────────────────────────────────────────
 # compute_volume_features
-# ─────────────────────────────────────────────
 
 class TestComputeVolumeFeatures:
     def test_adds_all_columns(self):
@@ -225,9 +215,7 @@ class TestComputeVolumeFeatures:
         assert 0.5 < med < 2.0
 
 
-# ─────────────────────────────────────────────
 # compute_spread_features
-# ─────────────────────────────────────────────
 
 class TestComputeSpreadFeatures:
     def test_adds_columns(self):
@@ -260,9 +248,7 @@ class TestComputeSpreadFeatures:
         assert (valid > 0).all()
 
 
-# ─────────────────────────────────────────────
 # compute_time_features
-# ─────────────────────────────────────────────
 
 class TestComputeTimeFeatures:
     def test_adds_all_columns(self):
@@ -304,9 +290,7 @@ class TestComputeTimeFeatures:
         assert abs(out[FeatureCols.HOUR_COS].iloc[0] - 1.0) < 1e-10
 
 
-# ─────────────────────────────────────────────
 # compute_all_features
-# ─────────────────────────────────────────────
 
 class TestComputeAllFeatures:
     EXPECTED_FEATURE_COLS = [

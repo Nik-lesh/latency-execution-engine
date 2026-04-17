@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 
-# ── Helper: generate test data ──
+#  Helper: generate test data 
 def make_data(n=5000, price=50000.0, seed=42):
     rng = np.random.default_rng(seed)
     close = price * np.exp(np.cumsum(rng.normal(0, 0.0008, n)))
@@ -41,10 +41,10 @@ class Results:
     def check(self, name, condition, detail=""):
         if condition:
             self.passed += 1
-            print(f"  ✅ {name}")
+            print(f"   {name}")
         else:
             self.failed += 1
-            print(f"  ❌ {name}: {detail}")
+            print(f"   {name}: {detail}")
 
     def summary(self):
         t = self.passed + self.failed
@@ -56,7 +56,7 @@ class Results:
 
 def test_impact_model():
     """Test the core market impact calculations."""
-    print("\n💥 IMPACT MODEL TESTS")
+    print("\n IMPACT MODEL TESTS")
     r = Results()
 
     from src.simulator.impact import ImpactParams, compute_execution_price
@@ -89,7 +89,7 @@ def test_impact_model():
 
 def test_almgren_chriss_trajectory():
     """Test the A-C optimal trajectory computation."""
-    print("\n📐 ALMGREN-CHRISS TRAJECTORY TESTS")
+    print("\n ALMGREN-CHRISS TRAJECTORY TESTS")
     r = Results()
 
     from src.simulator.impact import compute_almgren_chriss_trajectory, ImpactParams
@@ -124,7 +124,7 @@ def test_almgren_chriss_trajectory():
 
 def test_simulator_engine():
     """Test the full execution simulator."""
-    print("\n🎮 SIMULATOR ENGINE TESTS")
+    print("\n SIMULATOR ENGINE TESTS")
     r = Results()
 
     from src.features.engine import compute_all_features
@@ -168,7 +168,7 @@ def test_simulator_engine():
 
 def test_variable_spread_env():
     """Test the large-order environment with variable spread."""
-    print("\n📊 VARIABLE SPREAD ENVIRONMENT TESTS")
+    print("\n VARIABLE SPREAD ENVIRONMENT TESTS")
     r = Results()
 
     # Import the Env from train_large.py by executing the class definition
@@ -215,7 +215,7 @@ def test_variable_spread_env():
 
 def test_data_pipeline():
     """Test data loading and feature computation."""
-    print("\n🔧 DATA PIPELINE TESTS")
+    print("\n DATA PIPELINE TESTS")
     r = Results()
 
     from src.features.engine import compute_all_features

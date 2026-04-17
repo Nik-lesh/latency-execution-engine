@@ -53,7 +53,7 @@ def fig1_training_curves(save_dir):
     ax.set_xlabel('Episode'); ax.set_ylabel('ε'); ax.set_title('Exploration Schedule', fontweight='bold'); ax.grid(True, alpha=0.2)
     plt.suptitle('DQN Training — 50K Episodes, 3 Assets (BTC + ETH + SOL)', fontsize=16, fontweight='bold', y=1.02)
     plt.tight_layout(); fig.savefig(save_dir/'fig1_training_curves.png', dpi=150, bbox_inches='tight', facecolor=COLORS['bg']); plt.close()
-    log.info('  ✅ fig1')
+    log.info('   fig1')
 
 
 def fig2_strategy_comparison(df, save_dir):
@@ -77,7 +77,7 @@ def fig2_strategy_comparison(df, save_dir):
     ax.set_xlim(0, max(means)*1.3); ax.grid(True, axis='x', alpha=0.2); ax.invert_yaxis()
     bars[np.argmin(means)].set_edgecolor(COLORS['accent']); bars[np.argmin(means)].set_linewidth(2.5)
     plt.tight_layout(); fig.savefig(save_dir/'fig2_strategy_comparison.png', dpi=150, bbox_inches='tight', facecolor=COLORS['bg']); plt.close()
-    log.info('  ✅ fig2')
+    log.info('   fig2')
 
 
 def fig3_order_scaling(df, save_dir, model_path):
@@ -135,7 +135,7 @@ def fig3_order_scaling(df, save_dir, model_path):
 
     plt.suptitle('Order Size Scaling — Larger Orders Need Smarter Execution', fontsize=16, fontweight='bold', y=1.02)
     plt.tight_layout(); fig.savefig(save_dir/'fig3_order_scaling.png', dpi=150, bbox_inches='tight', facecolor=COLORS['bg']); plt.close()
-    log.info('  ✅ fig3')
+    log.info('   fig3')
 
 
 def fig4_execution_trajectory(df, save_dir, model_path):
@@ -237,7 +237,7 @@ def fig4_execution_trajectory(df, save_dir, model_path):
             transform=ax.transAxes, fontsize=9, va='top', ha='right', alpha=0.7)
 
     plt.tight_layout(); fig.savefig(save_dir/'fig4_execution_trajectory.png', dpi=150, bbox_inches='tight', facecolor=COLORS['bg']); plt.close()
-    log.info('  ✅ fig4')
+    log.info('   fig4')
 
 
 def main():
@@ -251,11 +251,11 @@ def main():
     df = pd.read_parquet(args.data) if args.data.endswith('.parquet') else pd.read_csv(args.data, parse_dates=['timestamp'])
     df = df.iloc[int(len(df)*0.8):].copy().reset_index(drop=True)
     log.info(f'{len(df):,} bars')
-    log.info('\n📊 Fig 1...'); fig1_training_curves(save_dir)
-    log.info('\n📊 Fig 2...'); fig2_strategy_comparison(df, save_dir)
-    log.info('\n📊 Fig 3...'); fig3_order_scaling(df, save_dir, args.model)
-    log.info('\n📊 Fig 4...'); fig4_execution_trajectory(df, save_dir, args.model)
+    log.info('\n Fig 1...'); fig1_training_curves(save_dir)
+    log.info('\n Fig 2...'); fig2_strategy_comparison(df, save_dir)
+    log.info('\n Fig 3...'); fig3_order_scaling(df, save_dir, args.model)
+    log.info('\n Fig 4...'); fig4_execution_trajectory(df, save_dir, args.model)
     print(f'\n{"="*60}\n  ALL FIGURES → reports/figures/\n{"="*60}')
-    for f in sorted(save_dir.glob('fig*.png')): print(f'  📈 {f.name} ({f.stat().st_size/1024:.0f} KB)')
+    for f in sorted(save_dir.glob('fig*.png')): print(f'   {f.name} ({f.stat().st_size/1024:.0f} KB)')
 
 if __name__ == '__main__': main()

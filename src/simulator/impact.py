@@ -2,7 +2,6 @@
 Market impact models for execution simulation.
 
 THE THEORY (Almgren & Chriss, 2000):
-=====================================
 When you trade, you move the price against yourself. This has two components:
 
 1. PERMANENT IMPACT (γ): Your trade permanently shifts the fair price.

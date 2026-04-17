@@ -34,9 +34,7 @@ def load_data(path):
     return compute_all_features(df)
 
 
-# ══════════════════════════════════════════
 # 1. FAILURE CASES
-# ══════════════════════════════════════════
 
 def analyze_failure_cases(df):
     """Identify and analyze scenarios where strategies fail."""
@@ -107,9 +105,7 @@ def analyze_failure_cases(df):
     print(f'  Risk: Orders may not fill completely. Participation rate hits cap.')
 
 
-# ══════════════════════════════════════════
 # 2. EDGE CASES
-# ══════════════════════════════════════════
 
 def analyze_edge_cases(df):
     """Test edge cases that could break the system."""
@@ -134,7 +130,7 @@ def analyze_edge_cases(df):
         if fills:
             print(f'    {qty:>5} BTC: fill rate = {np.mean(fills):.1%} '
                   f'(min: {np.min(fills):.1%}) '
-                  f'{"✅" if np.mean(fills) > 0.95 else "⚠️" if np.mean(fills) > 0.80 else "❌"}')
+                  f'{"" if np.mean(fills) > 0.95 else "" if np.mean(fills) > 0.80 else ""}')
 
     # Edge case 2: Very short horizon
     print(f'\n  EDGE CASE: Short execution horizon')
@@ -170,9 +166,7 @@ def analyze_edge_cases(df):
         print(f'    P{p:>2}: {spread.quantile(p/100)*100:.4f}%')
 
 
-# ══════════════════════════════════════════
 # 3. LIMITATIONS
-# ══════════════════════════════════════════
 
 def analyze_limitations():
     """Document system limitations."""
@@ -222,9 +216,7 @@ def analyze_limitations():
         print(f'     {detail}')
 
 
-# ══════════════════════════════════════════
 # 4. PERFORMANCE VS COMPLEXITY TRADE-OFFS
-# ══════════════════════════════════════════
 
 def analyze_performance_complexity(df):
     """Benchmark strategies on both performance and computational cost."""
@@ -247,7 +239,7 @@ def analyze_performance_complexity(df):
 
     print(f'\n  {"Strategy":<16s} {"Avg Cost($)":>12s} {"IS(bps)":>10s} '
           f'{"Time/Order":>12s} {"Complexity":>14s}')
-    print(f'  {"─"*66}')
+    print(f'  {""*66}')
 
     for name, factory in strategies.items():
         costs, is_vals = [], []
@@ -283,9 +275,7 @@ def analyze_performance_complexity(df):
     print(f'    - At $940/order savings × 10 orders/day = $3.4M/year >> training cost.')
 
 
-# ══════════════════════════════════════════
 # 5. ETHICAL CONSIDERATIONS
-# ══════════════════════════════════════════
 
 def analyze_ethics():
     """Ethical risk analysis — required by CS5130 rubric."""
@@ -339,9 +329,7 @@ def analyze_ethics():
         print(f'     {mitigation}')
 
 
-# ══════════════════════════════════════════
 # Main
-# ══════════════════════════════════════════
 
 def main():
     import argparse
@@ -361,7 +349,7 @@ def main():
         analyze_edge_cases(df)
         analyze_performance_complexity(df)
     else:
-        print('\n  ⚠️  No data provided. Run with --data for quantitative analysis.')
+        print('\n    No data provided. Run with --data for quantitative analysis.')
         print('  Showing limitations and ethics (no data needed).\n')
 
     analyze_limitations()

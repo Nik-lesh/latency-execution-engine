@@ -1,6 +1,4 @@
-# ============================================
 # Default Configuration
-# ============================================
 # All hardcoded values live HERE, not in source code.
 # Override per-experiment by creating a new YAML file.
 

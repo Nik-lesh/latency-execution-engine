@@ -45,9 +45,7 @@ from typing import Optional
 import requests
 from tqdm import tqdm
 
-# ============================================================
 # Configuration
-# ============================================================
 
 # Binance public data base URL
 BASE_URL = "https://data.binance.vision/data/spot/monthly"
@@ -78,9 +76,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# ============================================================
 # Core Download Functions
-# ============================================================
 
 def generate_months(start: str, end: str) -> list[tuple[int, int]]:
     """Generate list of (year, month) tuples between start and end.
@@ -207,7 +203,7 @@ def download_and_extract(
                     extracted_path.rename(output_path)
 
             size_mb = output_path.stat().st_size / (1024 * 1024)
-            logger.info(f"✅ {csv_name} ({size_mb:.1f} MB)")
+            logger.info(f" {csv_name} ({size_mb:.1f} MB)")
             return output_path
 
         except requests.exceptions.Timeout:
@@ -224,13 +220,11 @@ def download_and_extract(
             sleep_time = RETRY_DELAY * (2 ** (attempt - 1))  # Exponential backoff
             time.sleep(sleep_time)
 
-    logger.error(f"❌ Failed after {max_retries} attempts: {zip_name}")
+    logger.error(f" Failed after {max_retries} attempts: {zip_name}")
     return None
 
 
-# ============================================================
 # High-Level Download Orchestrators
-# ============================================================
 
 def download_klines(
     symbols: list[str],
@@ -256,7 +250,7 @@ def download_klines(
 
     for symbol in symbols:
         logger.info(f"\n{'='*50}")
-        logger.info(f"📊 Downloading {symbol} klines ({interval}) | {start} → {end}")
+        logger.info(f" Downloading {symbol} klines ({interval}) | {start} → {end}")
         logger.info(f"   {len(months)} months to download")
         logger.info(f"{'='*50}")
 
@@ -272,7 +266,7 @@ def download_klines(
             time.sleep(DELAY_BETWEEN_REQUESTS)
 
         downloaded[symbol] = paths
-        logger.info(f"✅ {symbol}: {len(paths)}/{len(months)} months downloaded")
+        logger.info(f" {symbol}: {len(paths)}/{len(months)} months downloaded")
 
     return downloaded
 
@@ -285,7 +279,7 @@ def download_trades(
 ) -> dict[str, list[Path]]:
     """Download tick-level trade data for specified symbols.
 
-    ⚠️  WARNING: Trade data is MASSIVE. BTCUSDT is ~300-800 MB per month.
+      WARNING: Trade data is MASSIVE. BTCUSDT is ~300-800 MB per month.
     2 years ≈ 10-15 GB compressed CSV.
 
     Only download for symbols where you need tick-level simulation.
@@ -304,7 +298,7 @@ def download_trades(
 
     for symbol in symbols:
         logger.info(f"\n{'='*50}")
-        logger.info(f"🔬 Downloading {symbol} TRADES | {start} → {end}")
+        logger.info(f" Downloading {symbol} TRADES | {start} → {end}")
         logger.info(f"   {len(months)} months — THIS WILL BE LARGE (~500MB/month)")
         logger.info(f"{'='*50}")
 
@@ -320,14 +314,12 @@ def download_trades(
             time.sleep(DELAY_BETWEEN_REQUESTS)
 
         downloaded[symbol] = paths
-        logger.info(f"✅ {symbol}: {len(paths)}/{len(months)} months downloaded")
+        logger.info(f" {symbol}: {len(paths)}/{len(months)} months downloaded")
 
     return downloaded
 
 
-# ============================================================
 # Summary & Disk Usage
-# ============================================================
 
 def print_download_summary(output_base: Path = Path("data/raw")) -> None:
     """Print a summary of all downloaded data."""
@@ -362,9 +354,7 @@ def print_download_summary(output_base: Path = Path("data/raw")) -> None:
     print(f"{'='*60}\n")
 
 
-# ============================================================
 # CLI Entry Point
-# ============================================================
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -432,7 +422,7 @@ def main():
     if not args.klines_only:
         print(f"  Symbols (trades): {args.trade_symbols}")
         print(f"  Trades range:     {args.trade_start} → {args.trade_end}")
-        print(f"  ⚠️  Trades are ~500MB/month — ensure sufficient disk space")
+        print(f"    Trades are ~500MB/month — ensure sufficient disk space")
 
     print(f"  Output:           {args.output}")
     print(f"{'='*60}\n")

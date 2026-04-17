@@ -23,9 +23,7 @@ from src.data.schemas import KlineSchema, TradeSchema
 
 logger = logging.getLogger(__name__)
 
-# --------------------------------------------------------------------------
 # Binance data.binance.vision CSV column mappings
-# --------------------------------------------------------------------------
 # Binance klines CSVs have NO header. Columns are positional.
 BINANCE_KLINE_COLUMNS = [
     "open_time",        # 0: Kline open time (ms timestamp)

@@ -126,7 +126,7 @@ def main():
     print(f'{"="*80}')
     print(f'\n  Baselines (real tick fills):')
     print(f'  {"Strategy":<14s} {"IS(bps)":>10s} {"Std":>8s} {"Cost($)":>14s} {"Fill":>7s} {"N":>5s}')
-    print(f'  {"─"*60}')
+    print(f'  {""*60}')
     for name in ['Immediate','TWAP','VWAP']:
         r = results[name]
         if r: print(f'  {name:<14s} {np.mean([x["is_bps"] for x in r]):>+10.2f} '
@@ -142,7 +142,7 @@ def main():
         vv=[r['vs_vwap'] for r in agent_results]; vt=[r['vs_twap'] for r in agent_results]
         ac=[r['cost'] for r in agent_results]; vc2=[r['vwap_cost'] for r in agent_results]; tc2=[r['twap_cost'] for r in agent_results]
         print(f'  {"Strategy":<14s} {"Cost($)":>14s} {"vs TWAP":>10s} {"vs VWAP":>10s}')
-        print(f'  {"─"*50}')
+        print(f'  {""*50}')
         print(f'  {"TWAP (sim)":<14s} ${np.mean(tc2):>13.2f}')
         print(f'  {"VWAP (sim)":<14s} ${np.mean(vc2):>13.2f} {(1-np.mean(vc2)/np.mean(tc2))*100:>+9.1f}%')
         print(f'  {"ML Agent":<14s} ${np.mean(ac):>13.2f} {(1-np.mean(ac)/np.mean(tc2))*100:>+9.1f}% '

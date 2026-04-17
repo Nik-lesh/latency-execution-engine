@@ -29,9 +29,7 @@ from src.data.schemas import KlineSchema
 logger = logging.getLogger(__name__)
 
 
-# ============================================================
 # Feature column names (single source of truth)
-# ============================================================
 
 class FeatureCols:
     """Column names for engineered features."""
