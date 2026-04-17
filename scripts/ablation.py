@@ -146,9 +146,7 @@ def main():
         'delta_vs_baseline': 0.0,
     })
 
-    # ══════════════════════════════════════════
     # PART 1: Feature Ablation (7 configs)
-    # ══════════════════════════════════════════
     print(f'\n{"="*70}')
     print(f'  FEATURE ABLATION — Remove one feature group at a time')
     print(f'{"="*70}')
@@ -186,9 +184,7 @@ def main():
         })
         log.info(f'    vsTWAP={r["vs_twap"]:+.3f} (delta={delta:+.3f}) beat={r["beat_twap"]:.0f}%')
 
-    # ══════════════════════════════════════════
     # PART 2: Configuration Ablation (5 configs)
-    # ══════════════════════════════════════════
     print(f'\n{"="*70}')
     print(f'  CONFIGURATION ABLATION — Different hyperparameters')
     print(f'{"="*70}')
@@ -258,34 +254,32 @@ def main():
     })
     log.info(f'    vsTWAP={r["vs_twap"]:+.3f} beat={r["beat_twap"]:.0f}%')
 
-    # ══════════════════════════════════════════
     # Print results
-    # ══════════════════════════════════════════
     print(f'\n{"="*80}')
     print(f'  ABLATION STUDY RESULTS — {len(results)-1} configurations + baseline')
     print(f'{"="*80}')
 
     print(f'\n  {"Configuration":<30s} {"vs TWAP":>10s} {"Beat%":>7s} {"Cost($)":>12s} {"Delta":>10s}')
-    print(f'  {"─"*72}')
+    print(f'  {""*72}')
 
     for r in results:
         delta_str = f'{r["delta_vs_baseline"]:+.2f}' if r['delta_vs_baseline'] != 0 else '—'
         mark = ''
         if r['category'] == 'baseline':
-            mark = ' ◆'
+            mark = ' '
         elif r['delta_vs_baseline'] < -2:
-            mark = ' ⚠️'  # Significant degradation
+            mark = ' '  # Significant degradation
         print(f'  {r["config"]:<30s} {r["vs_twap"]:>+10.2f} {r["beat_twap"]:>6.0f}% '
               f'${r["cost_mean"]:>11.2f} {delta_str:>10s}{mark}')
 
     # Feature importance ranking
     print(f'\n  FEATURE IMPORTANCE (by degradation when removed):')
-    print(f'  {"─"*50}')
+    print(f'  {""*50}')
     feature_results = [r for r in results if r['category'] == 'feature']
     feature_results.sort(key=lambda x: x['delta_vs_baseline'])
     for i, r in enumerate(feature_results, 1):
         bar_len = max(0, int(abs(r['delta_vs_baseline']) * 3))
-        bar = '█' * bar_len
+        bar = '' * bar_len
         print(f'  {i}. {r["config"]:<28s} {r["delta_vs_baseline"]:>+6.2f} bps  {bar}')
 
     print(f'\n  Most important features degrade performance most when removed.')
